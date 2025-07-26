@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>澳門地區寶可夢卡牌活動查詢</title>
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/v-calendar@next"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -30,6 +31,14 @@
     .filters label {
       margin-right: 10px;
     }
+    .map-link {
+      text-decoration: none;
+      font-size: 18px;
+    }
+    .calendar {
+      max-width: 500px;
+      margin-bottom: 30px;
+    }
   </style>
 </head>
 <body>
@@ -48,6 +57,23 @@
       <button @click="search">查詢</button>
     </div>
 
+    <div class="calendar">
+      <v-calendar 
+        :attributes="calendarAttributes"
+        @dayclick="onDayClick"
+        title-position="left"
+      />
+    </div>
+
+    <div v-if="selectedEvents.length">
+      <h3>{{ selectedDate }} 的活動：</h3>
+      <ul>
+        <li v-for="(e, i) in selectedEvents" :key="i">
+          {{ e.time }} - {{ e.organizer }} @ {{ e.title }}
+        </li>
+      </ul>
+    </div>
+
     <p v-if="loading">載入中...</p>
     <p v-if="!loading && events.length === 0">目前無澳門活動</p>
     <table v-if="events.length">
@@ -55,18 +81,20 @@
         <tr>
           <th>日期</th>
           <th>時間</th>
+          <th>主辦</th>
           <th>活動名稱</th>
           <th>地點</th>
-          <th>主辦</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="event in events" :key="event.title + event.datetime">
           <td>{{ event.date }}</td>
           <td>{{ event.time }}</td>
-          <td>{{ event.title }}</td>
-          <td>{{ event.place }}</td>
           <td>{{ event.organizer }}</td>
+          <td>{{ event.title }}</td>
+          <td>
+            <a class="map-link" :href="`https://www.google.com/maps/search/?q=澳門 ${event.place}`" target="_blank" rel="noopener noreferrer">🗺️</a>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -74,8 +102,10 @@
 
   <script>
     const { createApp } = Vue;
+    const { setupCalendar, Calendar } = VCalendar;
 
     createApp({
+      components: { VCalendar: Calendar },
       data() {
         const today = new Date();
         const in30days = new Date(Date.now() + 30 * 86400000);
@@ -84,9 +114,25 @@
           loading: false,
           startDate: today.toISOString().split('T')[0],
           endDate: in30days.toISOString().split('T')[0],
+          selectedDate: '',
+          selectedEvents: [],
         };
       },
+      computed: {
+        calendarAttributes() {
+          return this.events.map(event => ({
+            key: event.date,
+            highlight: true,
+            dates: new Date(event.date)
+          }));
+        }
+      },
       methods: {
+        onDayClick({ date }) {
+          const dateStr = date.toISOString().split('T')[0];
+          this.selectedDate = dateStr;
+          this.selectedEvents = this.events.filter(e => e.date === dateStr);
+        },
         async fetchPage(page = 1) {
           const start = this.startDate.split('-');
           const end = this.endDate.split('-');
@@ -129,6 +175,8 @@
         },
         async fetchAllPages() {
           this.events = [];
+          this.selectedDate = '';
+          this.selectedEvents = [];
           this.loading = true;
           let page = 1;
           while (await this.fetchPage(page)) {
@@ -141,6 +189,7 @@
         }
       },
       mounted() {
+        setupCalendar();
         this.fetchAllPages();
       }
     }).mount('#app');
