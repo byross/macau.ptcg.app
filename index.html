@@ -24,11 +24,30 @@
     th {
       background-color: #eee;
     }
+    .filters {
+      margin-bottom: 20px;
+    }
+    .filters label {
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
   <div id="app">
-    <h1>澳門卡牌活動（未來 30 天內）</h1>
+    <h1>澳門卡牌活動查詢</h1>
+
+    <div class="filters">
+      <label>
+        起始日期：
+        <input type="date" v-model="startDate">
+      </label>
+      <label>
+        結束日期：
+        <input type="date" v-model="endDate">
+      </label>
+      <button @click="search">查詢</button>
+    </div>
+
     <p v-if="loading">載入中...</p>
     <p v-if="!loading && events.length === 0">目前無澳門活動</p>
     <table v-if="events.length">
@@ -58,11 +77,13 @@
 
     createApp({
       data() {
+        const today = new Date();
+        const in30days = new Date(Date.now() + 30 * 86400000);
         return {
           events: [],
-          loading: true,
-          startDate: new Date().toISOString().split('T')[0],
-          endDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+          loading: false,
+          startDate: today.toISOString().split('T')[0],
+          endDate: in30days.toISOString().split('T')[0],
         };
       },
       methods: {
@@ -107,11 +128,16 @@
           }
         },
         async fetchAllPages() {
+          this.events = [];
+          this.loading = true;
           let page = 1;
           while (await this.fetchPage(page)) {
             page++;
           }
           this.loading = false;
+        },
+        search() {
+          this.fetchAllPages();
         }
       },
       mounted() {
