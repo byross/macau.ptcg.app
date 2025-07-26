@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <title>澳門寶可夢比賽活動</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { color: #e60012; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f3f3f3; }
+  </style>
+</head>
+<body>
+  <h1>未來30天澳門地區寶可夢卡牌比賽</h1>
+  <table id="events">
+    <thead>
+      <tr><th>日期</th><th>時間</th><th>地點</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function loadEvents() {
+      try {
+        const res = await fetch('/events');
+        const data = await res.json();
+        const tbody = document.querySelector('#events tbody');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3">暫無活動</td></tr>';
+        }
+
+        for (const event of data) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${event.date}</td><td>${event.time}</td><td>${event.location}</td>`;
+          tbody.appendChild(tr);
+        }
+      } catch (e) {
+        console.error(e);
+        document.querySelector('#events tbody').innerHTML = '<tr><td colspan="3">載入失敗</td></tr>';
+      }
+    }
+
+    loadEvents();
+  </script>
+</body>
+</html>
