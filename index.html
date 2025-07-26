@@ -11,6 +11,31 @@
       padding: 20px;
       background-color: #f4f4f4;
     }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      background: white;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    .calendar .day {
+      border: 1px solid #ccc;
+      min-height: 80px;
+      padding: 4px;
+      position: relative;
+    }
+    .calendar .today {
+      border: 2px solid #007BFF;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: white;
+      margin: 1px 2px;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -24,44 +49,9 @@
     th {
       background-color: #eee;
     }
-    .filters {
-      margin-bottom: 20px;
-    }
-    .filters label {
-      margin-right: 10px;
-    }
     .map-link {
       text-decoration: none;
       font-size: 18px;
-    }
-    .calendar-table th,
-    .calendar-table td {
-      width: 14.28%;
-      border: 1px solid #ccc;
-      vertical-align: top;
-      height: 80px;
-      padding: 4px;
-      text-align: left;
-    }
-    .calendar-table th {
-      background-color: #eee;
-    }
-    .calendar-day {
-      cursor: pointer;
-    }
-    .today-marker {
-      background-color: #007bff;
-      color: white;
-      padding: 1px 4px;
-      border-radius: 4px;
-    }
-    .tag {
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #fff;
-      margin: 2px 2px 0 0;
     }
   </style>
 </head>
@@ -69,44 +59,19 @@
   <div id="app">
     <h1>澳門卡牌活動查詢</h1>
 
-    <div class="filters">
-      <label>
-        起始日期：
-        <input type="date" v-model="startDate">
-      </label>
-      <label>
-        結束日期：
-        <input type="date" v-model="endDate">
-      </label>
-      <button @click="search">查詢</button>
+    <div class="calendar">
+      <div v-for="(week, wIndex) in calendarGrid" :key="wIndex">
+        <div v-for="(cell, dIndex) in week" :key="dIndex" :class="['day', { today: cell.isToday }]">
+          <div>{{ cell.day }}</div>
+          <div v-for="event in cell.events" :key="event.scrollId" :class="'tag'" :style="{ backgroundColor: organizerColors[event.organizer] }"
+               @click="scrollTo(event.scrollId)">
+            {{ event.organizer[0] }}
+          </div>
+        </div>
+      </div>
     </div>
 
-    <table class="calendar-table">
-      <thead>
-        <tr>
-          <th v-for="day in weekDays" :key="day">{{ day }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(week, wi) in calendarWeeks" :key="wi">
-          <td v-for="(day, di) in week" :key="di" class="calendar-day" @click="scrollTo(day && day.dateStr)">
-            <div v-if="day">
-              <span :class="{ 'today-marker': day.isToday }">{{ day.day }}</span>
-              <div v-if="day.events.length">
-                <span v-for="(e, ei) in day.events" :key="ei" class="tag"
-                      :style="{ backgroundColor: organizerColors[e.organizer] || '#333' }">
-                  {{ e.organizer.charAt(0) }}
-                </span>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p v-if="loading">載入中...</p>
-    <p v-if="!loading && events.length === 0">目前無澳門活動</p>
-    <table v-if="events.length">
+    <table>
       <thead>
         <tr>
           <th>日期</th>
@@ -117,7 +82,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="event in events" :key="event.title + event.datetime" :id="event.scrollId">
+        <tr v-for="event in events" :key="event.scrollId" :id="event.scrollId">
           <td>{{ event.date }}</td>
           <td>{{ event.time }}</td>
           <td>{{ event.organizer }}</td>
@@ -135,21 +100,13 @@
 
     createApp({
       data() {
-        const today = new Date();
-        const in30days = new Date(Date.now() + 30 * 86400000);
         return {
           events: [],
-          loading: false,
-          startDate: today.toISOString().split('T')[0],
-          endDate: in30days.toISOString().split('T')[0],
-          weekDays: ['一', '二', '三', '四', '五', '六', '日'],
           organizerColors: {},
         };
       },
       computed: {
-        calendarWeeks() {
-          const today = new Date();
-          const todayStr = today.toISOString().split('T')[0];
+        calendarGrid() {
           const byDate = {};
           this.events.forEach(e => {
             const id = `${e.date}-${e.title}`;
@@ -158,94 +115,59 @@
             byDate[e.date].push(e);
           });
 
-          const weeks = [];
-          const start = new Date(today);
-          start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+          const grid = [];
+          const start = new Date();
+          const today = new Date();
+          const startDay = start.getDay();
+          const diff = startDay === 0 ? -6 : 1 - startDay;
+          start.setDate(start.getDate() + diff);
 
           for (let w = 0; w < 6; w++) {
             const week = [];
-            for (let i = 0; i < 7; i++) {
-              const d = new Date(start);
-              d.setDate(start.getDate() + w * 7 + i);
-              const dateStr = d.toISOString().split('T')[0];
+            for (let d = 0; d < 7; d++) {
+              const cellDate = new Date(start);
+              cellDate.setDate(start.getDate() + w * 7 + d);
+              const dateStr = cellDate.toISOString().split('T')[0];
               week.push({
-                day: d.getDate(),
+                day: cellDate.getDate(),
                 dateStr,
-                isToday: dateStr === todayStr,
+                isToday: dateStr === today.toISOString().split('T')[0],
                 events: (byDate[dateStr] || []).sort((a, b) => a.time.localeCompare(b.time))
               });
             }
-            weeks.push(week);
+            grid.push(week);
           }
-          return weeks;
+          return grid;
         }
       },
       methods: {
-        scrollTo(dateStr) {
-          if (!dateStr) return;
-          const e = this.events.find(e => e.date === dateStr);
-          if (e) {
-            const target = document.getElementById(e.scrollId);
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
+        scrollTo(id) {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
         },
-        async fetchPage(page = 1) {
-          const [sy, sm, sd] = this.startDate.split('-');
-          const [ey, em, ed] = this.endDate.split('-');
-          const startStr = `${sm}-${sd}-${sy}`;
-          const endStr = `${em}-${ed}-${ey}`;
+        async fetchEvents() {
+          // 模擬資料
+          this.events = [
+            { date: '2025-07-26', time: '16:00-18:30', organizer: '紙世代', title: '比克提尼BWR爭奪戰', place: '地點1' },
+            { date: '2025-07-26', time: '18:00-20:00', organizer: '小黑屋 x Black Zone', title: '比克提尼BWR爭奪戰', place: '地點2' },
+            { date: '2025-07-27', time: '13:30-16:00', organizer: '童趣同樂', title: '寶可夢卡牌賽', place: '地點3' },
+          ];
 
-          const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-            `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
-          )}`;
-
-          try {
-            const res = await fetch(url);
-            const html = await res.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const list = doc.querySelectorAll('ul.eventList li.event');
-            if (!list.length) return false;
-
-            list.forEach(li => {
-              const rawDate = li.querySelector('time.eventDate')?.textContent.trim();
-              const [mm, dd] = rawDate.split('-');
-              const yyyy = new Date().getFullYear();
-              const date = `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
-
-              const time = li.querySelector('p.eventTime')?.textContent.trim();
-              const title = li.querySelector('p.eventTitle')?.textContent.trim();
-              const place = li.querySelector('p.place')?.textContent.trim();
-              const organizer = li.querySelector('p.organizer')?.textContent.trim();
-              const lowerFields = `${place || ''} ${organizer || ''}`.toLowerCase();
-
-              if (lowerFields.includes('澳門') || lowerFields.includes('噶地利亞街')) {
-                if (!this.organizerColors[organizer]) {
-                  this.organizerColors[organizer] = `hsl(${Math.floor(Math.random() * 360)}, 70%, 35%)`;
-                }
-                this.events.push({ date, time, title, place, organizer });
-              }
-            });
-
-            return true;
-          } catch (e) {
-            console.error('錯誤：', e);
-            return false;
-          }
-        },
-        async fetchAllPages() {
-          this.events = [];
-          this.loading = true;
-          let page = 1;
-          while (await this.fetchPage(page)) page++;
-          this.loading = false;
-        },
-        search() {
-          this.fetchAllPages();
+          const distinct = new Set();
+          this.events.forEach(e => {
+            if (!this.organizerColors[e.organizer]) {
+              let color;
+              do {
+                color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 40%)`;
+              } while (distinct.has(color));
+              distinct.add(color);
+              this.organizerColors[e.organizer] = color;
+            }
+          });
         }
       },
       mounted() {
-        this.fetchAllPages();
+        this.fetchEvents();
       }
     }).mount('#app');
   </script>
