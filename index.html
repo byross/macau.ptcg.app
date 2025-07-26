@@ -1,49 +1,173 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>澳門寶可夢比賽活動</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    h1 { color: #e60012; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f3f3f3; }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>澳門卡店比賽活動搜尋</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+        }
+        #loading {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+        }
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #0072e3;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-  <h1>未來30天澳門地區寶可夢卡牌比賽</h1>
-  <table id="events">
-    <thead>
-      <tr><th>日期</th><th>時間</th><th>地點</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <h1>澳門區卡店比賽活動（未來30天）</h1>
+    <div id="loading">正在載入資料…</div>
+    <table id="eventsTable" style="display: none;">
+        <thead>
+            <tr>
+                <th>日期</th>
+                <th>時間</th>
+                <th>店家 / 地址</th>
+                <th>活動名稱</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-  <script>
-    async function loadEvents() {
-      try {
-        const res = await fetch('/events');
-        const data = await res.json();
-        const tbody = document.querySelector('#events tbody');
-        tbody.innerHTML = '';
+    <script>
+        (async () => {
+            const regionKeyword = '澳門';
+            const events = [];
+            
+            // 格式化日期為 MM-DD-YYYY
+            function formatDateForSearch(date) {
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                const yyyy = date.getFullYear();
+                return `${mm}-${dd}-${yyyy}`;
+            }
 
-        if (data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="3">暫無活動</td></tr>';
-        }
+            // 取得當天與未來 30 天的日期範圍
+            const today = new Date();
+            const startDate = formatDateForSearch(today);
+            const endDateObj = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+            const endDate = formatDateForSearch(endDateObj);
 
-        for (const event of data) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${event.date}</td><td>${event.time}</td><td>${event.location}</td>`;
-          tbody.appendChild(tr);
-        }
-      } catch (e) {
-        console.error(e);
-        document.querySelector('#events tbody').innerHTML = '<tr><td colspan="3">載入失敗</td></tr>';
-      }
-    }
+            // 解析 HTML 內容取得事件資訊
+            function parseEvents(html, currentYear) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const items = doc.querySelectorAll('.eventList li.event');
+                items.forEach((li) => {
+                    const dateText = li.querySelector('time.eventDate')?.textContent.trim() || '';
+                    const timeText = li.querySelector('p.eventTime')?.textContent.trim() || '';
+                    const title = li.querySelector('p.eventTitle')?.textContent.trim() || '';
+                    const organizerLink = li.querySelector('p.organizer a');
+                    const storeName = organizerLink ? organizerLink.textContent.trim() : '';
+                    const place = li.querySelector('p.place')?.textContent.trim() || '';
 
-    loadEvents();
-  </script>
+                    // 只篩選地點或店家名稱包含澳門的活動
+                    if (place.includes(regionKeyword) || storeName.includes(regionKeyword)) {
+                        // 將 MM-DD 轉為完整日期（YYYY-MM-DD）
+                        const [mm, dd] = dateText.split('-').map(Number);
+                        let year = currentYear;
+                        // 如果月份已跨年則調整年份
+                        const eventDateObj = new Date(year, mm - 1, dd);
+                        // 建立 YYYY-MM-DD 格式字串
+                        const fullDate = `${eventDateObj.getFullYear()}-${String(eventDateObj.getMonth() + 1).padStart(2, '0')}-${String(eventDateObj.getDate()).padStart(2, '0')}`;
+                        events.push({
+                            date: fullDate,
+                            time: timeText,
+                            store: storeName || place,
+                            title: title,
+                        });
+                    }
+                });
+
+                // 取得總頁數資訊（只需執行一次）
+                let totalPages = 1;
+                const totalPageElement = doc.querySelector('.resultTotalPages');
+                if (totalPageElement) {
+                    const match = totalPageElement.textContent.match(/共(\d+)頁/);
+                    if (match) {
+                        totalPages = parseInt(match[1], 10);
+                    }
+                }
+                return totalPages;
+            }
+
+            // 透過 AllOrigins 代理取得 HTML 內容
+            async function fetchPage(pageNo) {
+                const baseUrl = `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${pageNo}&startDate=${startDate}&endDate=${endDate}&keyword=`;
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(baseUrl)}`;
+                const response = await fetch(proxyUrl);
+                if (!response.ok) {
+                    throw new Error('無法載入資料');
+                }
+                return response.text();
+            }
+
+            try {
+                let page = 1;
+                let totalPages = 1;
+                const currentYear = today.getFullYear();
+                
+                // 第一次抓取用於取得總頁數
+                const firstHtml = await fetchPage(page);
+                totalPages = parseEvents(firstHtml, currentYear);
+                page++;
+
+                // 繼續抓取後續頁面
+                while (page <= totalPages) {
+                    const html = await fetchPage(page);
+                    parseEvents(html, currentYear);
+                    page++;
+                }
+
+                // 顯示結果
+                const loadingDiv = document.getElementById('loading');
+                const table = document.getElementById('eventsTable');
+                const tbody = table.querySelector('tbody');
+                loadingDiv.style.display = 'none';
+
+                if (events.length > 0) {
+                    table.style.display = '';
+                    // 按日期排序
+                    events.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    events.forEach((event) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${event.date}</td><td>${event.time}</td><td>${event.store}</td><td>${event.title}</td>`;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    loadingDiv.textContent = '未找到任何澳門區比賽活動。';
+                    loadingDiv.style.display = 'block';
+                }
+            } catch (error) {
+                const loadingDiv = document.getElementById('loading');
+                loadingDiv.textContent = `載入資料時發生錯誤：${error.message}`;
+            }
+        })();
+    </script>
 </body>
 </html>
