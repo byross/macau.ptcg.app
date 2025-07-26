@@ -11,6 +11,35 @@
       padding: 20px;
       background-color: #f4f4f4;
     }
+    .filters {
+      margin-bottom: 20px;
+    }
+    .filters label {
+      margin-right: 10px;
+    }
+    .calendar-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      background: white;
+    }
+    .calendar-table th,
+    .calendar-table td {
+      border: 1px solid #ccc;
+      width: 14.28%;
+      vertical-align: top;
+      padding: 5px;
+      height: 100px;
+    }
+    .calendar-table th {
+      background-color: #eee;
+      text-align: center;
+    }
+    .day-cell strong {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -24,15 +53,12 @@
     th {
       background-color: #eee;
     }
-    .filters {
-      margin-bottom: 20px;
-    }
-    .filters label {
-      margin-right: 10px;
-    }
     .map-link {
       text-decoration: none;
       font-size: 18px;
+    }
+    .month-block {
+      margin-bottom: 40px;
     }
   </style>
 </head>
@@ -50,6 +76,33 @@
         <input type="date" v-model="endDate">
       </label>
       <button @click="search">查詢</button>
+    </div>
+
+    <div class="custom-calendar">
+      <div v-for="(month, mi) in calendarData" :key="mi" class="month-block">
+        <h3>{{ month.label }}</h3>
+        <table class="calendar-table">
+          <thead>
+            <tr>
+              <th v-for="day in weekDays" :key="day">{{ day }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(week, wi) in month.weeks" :key="wi">
+              <td v-for="(day, di) in week" :key="di">
+                <div v-if="day" class="day-cell">
+                  <strong>{{ day.day }}</strong>
+                  <ul>
+                    <li v-for="(e, i) in day.events" :key="i">
+                      {{ e.time }} - {{ e.organizer }}
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <p v-if="loading">載入中...</p>
@@ -91,7 +144,49 @@
           loading: false,
           startDate: today.toISOString().split('T')[0],
           endDate: in30days.toISOString().split('T')[0],
+          weekDays: ['一', '二', '三', '四', '五', '六', '日'],
         };
+      },
+      computed: {
+        calendarData() {
+          const start = new Date(this.startDate);
+          const end = new Date(this.endDate);
+          const byDay = {};
+          this.events.forEach(e => {
+            byDay[e.date] = byDay[e.date] || [];
+            byDay[e.date].push(e);
+          });
+
+          const result = [];
+          const date = new Date(start);
+          date.setDate(1); // start from first of the month
+          while (date <= end) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const label = `${year} 年 ${month + 1} 月`;
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const firstWeekday = (firstDay.getDay() + 6) % 7; // make Monday start
+            const weeks = [];
+            let week = new Array(firstWeekday).fill(null);
+            for (let d = 1; d <= lastDay.getDate(); d++) {
+              const current = new Date(year, month, d);
+              const dateStr = current.toISOString().split('T')[0];
+              week.push({ day: d, events: byDay[dateStr] || [] });
+              if (week.length === 7) {
+                weeks.push(week);
+                week = [];
+              }
+            }
+            if (week.length > 0) {
+              while (week.length < 7) week.push(null);
+              weeks.push(week);
+            }
+            result.push({ label, weeks });
+            date.setMonth(date.getMonth() + 1);
+          }
+          return result;
+        }
       },
       methods: {
         async fetchPage(page = 1) {
@@ -99,7 +194,6 @@
           const end = this.endDate.split('-');
           const startStr = `${start[1]}-${start[2]}-${start[0]}`;
           const endStr = `${end[1]}-${end[2]}-${end[0]}`;
-
           const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
             `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
           )}`;
@@ -111,9 +205,7 @@
             const doc = parser.parseFromString(html, 'text/html');
             const list = doc.querySelectorAll('ul.eventList li.event');
 
-            if (list.length === 0) {
-              return false;
-            }
+            if (list.length === 0) return false;
 
             list.forEach(li => {
               const date = li.querySelector('time.eventDate')?.textContent.trim();
@@ -121,7 +213,6 @@
               const title = li.querySelector('p.eventTitle')?.textContent.trim();
               const place = li.querySelector('p.place')?.textContent.trim();
               const organizer = li.querySelector('p.organizer')?.textContent.trim();
-
               const lowerFields = `${place || ''} ${organizer || ''}`.toLowerCase();
               if (lowerFields.includes('澳門') || lowerFields.includes('噶地利亞街')) {
                 this.events.push({ date, time, title, place, organizer });
@@ -138,9 +229,7 @@
           this.events = [];
           this.loading = true;
           let page = 1;
-          while (await this.fetchPage(page)) {
-            page++;
-          }
+          while (await this.fetchPage(page)) page++;
           this.loading = false;
         },
         search() {
