@@ -40,6 +40,20 @@
       font-weight: bold;
       margin-bottom: 4px;
     }
+    .today-marker {
+      background-color: #007bff;
+      color: white;
+      padding: 2px 5px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .calendar-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-top: 4px;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -89,14 +103,13 @@
           </thead>
           <tbody>
             <tr v-for="(week, wi) in month.weeks" :key="wi">
-              <td v-for="(day, di) in week" :key="di">
+              <td v-for="(day, di) in week" :key="di" @click="scrollTo(day)" style="cursor: pointer;">
                 <div v-if="day" class="day-cell">
-                  <strong>{{ day.day }}</strong>
-                  <ul>
-                    <li v-for="(e, i) in day.events" :key="i">
-                      {{ e.time }} - {{ e.organizer }}
-                    </li>
-                  </ul>
+                  <strong>
+                    <span v-if="day.isToday" class="today-marker">{{ day.day }} 今日</span>
+                    <span v-else>{{ day.day }}</span>
+                  </strong>
+                  <div v-for="(e, i) in day.events.slice(0,1)" :key="i" class="calendar-dot" :style="{ backgroundColor: e.color }"></div>
                 </div>
               </td>
             </tr>
@@ -108,7 +121,7 @@
     <p v-if="loading">載入中...</p>
     <p v-if="!loading && events.length === 0">目前無澳門活動</p>
 
-    <table v-if="events.length">
+    <table v-if="events.length" ref="eventTable">
       <thead>
         <tr>
           <th>日期</th>
@@ -119,7 +132,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="event in events" :key="event.title + event.datetime">
+        <tr v-for="event in events" :key="event.title + event.datetime" :id="event.scrollId">
           <td>{{ event.date }}</td>
           <td>{{ event.time }}</td>
           <td>{{ event.organizer }}</td>
@@ -152,27 +165,41 @@
           const start = new Date(this.startDate);
           const end = new Date(this.endDate);
           const byDay = {};
+          const todayStr = new Date().toISOString().split('T')[0];
+
+          const organizerColors = {};
+          const colorList = ['#e6194b','#3cb44b','#ffe119','#4363d8','#f58231','#911eb4','#46f0f0','#f032e6','#bcf60c','#fabebe','#008080'];
+          let colorIndex = 0;
+
           this.events.forEach(e => {
+            if (!organizerColors[e.organizer]) {
+              organizerColors[e.organizer] = colorList[colorIndex % colorList.length];
+              colorIndex++;
+            }
+            const color = organizerColors[e.organizer];
+            const scrollId = `${e.date}-${e.title}`;
             byDay[e.date] = byDay[e.date] || [];
-            byDay[e.date].push(e);
+            byDay[e.date].push({ ...e, color, scrollId });
+            e.scrollId = scrollId; // for table row
           });
 
           const result = [];
           const date = new Date(start);
-          date.setDate(1); // start from first of the month
+          date.setDate(1);
           while (date <= end) {
             const year = date.getFullYear();
             const month = date.getMonth();
             const label = `${year} 年 ${month + 1} 月`;
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
-            const firstWeekday = (firstDay.getDay() + 6) % 7; // make Monday start
+            const firstWeekday = (firstDay.getDay() + 6) % 7;
             const weeks = [];
             let week = new Array(firstWeekday).fill(null);
             for (let d = 1; d <= lastDay.getDate(); d++) {
               const current = new Date(year, month, d);
               const dateStr = current.toISOString().split('T')[0];
-              week.push({ day: d, events: byDay[dateStr] || [] });
+              const events = byDay[dateStr] || [];
+              week.push({ day: d, events, isToday: dateStr === todayStr });
               if (week.length === 7) {
                 weeks.push(week);
                 week = [];
@@ -189,6 +216,14 @@
         }
       },
       methods: {
+        scrollTo(day) {
+          if (day && day.events.length) {
+            const target = document.getElementById(day.events[0].scrollId);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
+        },
         async fetchPage(page = 1) {
           const start = this.startDate.split('-');
           const end = this.endDate.split('-');
