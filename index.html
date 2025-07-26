@@ -1,238 +1,40 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>澳門地區寶可夢卡牌活動查詢</title>
-  <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
-    th, td {
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      text-align: left;
-    }
-    th {
-      background-color: #eee;
-    }
-    .filters {
-      margin-bottom: 20px;
-    }
-    .filters label {
-      margin-right: 10px;
-    }
-    .map-link {
-      text-decoration: none;
-      font-size: 18px;
-    }
-    .calendar-table th,
-    .calendar-table td {
-      width: 14.28%;
-      border: 1px solid #ccc;
-      vertical-align: top;
-      height: 80px;
-      padding: 4px;
-      text-align: left;
-    }
-    .calendar-table th {
-      background-color: #eee;
-    }
-    .calendar-day {
-      cursor: pointer;
-    }
-    .today-marker {
-      background-color: #007bff;
-      color: white;
-      padding: 1px 4px;
-      border-radius: 4px;
-    }
-  </style>
-</head>
-<body>
-  <div id="app">
-    <h1>澳門卡牌活動查詢</h1>
+<style>
+  .tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #fff;
+    margin: 2px 2px 0 0;
+  }
+</style>
 
-    <div class="filters">
-      <label>
-        起始日期：
-        <input type="date" v-model="startDate">
-      </label>
-      <label>
-        結束日期：
-        <input type="date" v-model="endDate">
-      </label>
-      <button @click="search">查詢</button>
+<!-- 替換日曆格顯示內容部分 -->
+<td v-for="(day, di) in week" :key="di" class="calendar-day" @click="scrollTo(day && day.dateStr)">
+  <div v-if="day">
+    <span :class="{ 'today-marker': day.isToday }">{{ day.day }}</span>
+    <div v-if="day.events.length">
+      <span v-for="(e, ei) in day.events" :key="ei" class="tag"
+            :style="{ backgroundColor: organizerColors[e.organizer] || '#333' }">
+        {{ e.organizer.charAt(0) }}
+      </span>
     </div>
-
-    <table class="calendar-table">
-      <thead>
-        <tr>
-          <th v-for="day in weekDays" :key="day">{{ day }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(week, wi) in calendarGrid" :key="wi">
-          <td v-for="(day, di) in week" :key="di" class="calendar-day" @click="scrollTo(day.dateStr)">
-            <div v-if="day">
-              <span :class="{ 'today-marker': day.isToday }">{{ day.day }}</span>
-              <div v-if="day.events.length">
-                {{ day.events[0].organizer.charAt(0) }}
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p v-if="loading">載入中...</p>
-    <p v-if="!loading && events.length === 0">目前無澳門活動</p>
-    <table v-if="events.length">
-      <thead>
-        <tr>
-          <th>日期</th>
-          <th>時間</th>
-          <th>主辦</th>
-          <th>活動名稱</th>
-          <th>地點</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="event in events" :key="event.title + event.datetime" :id="event.scrollId">
-          <td>{{ event.date }}</td>
-          <td>{{ event.time }}</td>
-          <td>{{ event.organizer }}</td>
-          <td>{{ event.title }}</td>
-          <td>
-            <a class="map-link" :href="`https://www.google.com/maps/search/?q=澳門 ${event.place}`" target="_blank" rel="noopener noreferrer">🗺️</a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
+</td>
 
-  <script>
-    const { createApp } = Vue;
+<script>
+  // 在 data 區新增 organizerColors
+  return {
+    events: [],
+    loading: false,
+    startDate: today.toISOString().split('T')[0],
+    endDate: in30days.toISOString().split('T')[0],
+    weekDays: ['一', '二', '三', '四', '五', '六', '日'],
+    organizerColors: {},
+  };
 
-    createApp({
-      data() {
-        const today = new Date();
-        const in30days = new Date(Date.now() + 30 * 86400000);
-        return {
-          events: [],
-          loading: false,
-          startDate: today.toISOString().split('T')[0],
-          endDate: in30days.toISOString().split('T')[0],
-          weekDays: ['一', '二', '三', '四', '五', '六', '日'],
-        };
-      },
-      computed: {
-        calendarGrid() {
-          const start = new Date(this.startDate);
-          const end = new Date(this.endDate);
-          const todayStr = new Date().toISOString().split('T')[0];
-          const byDate = {};
-          this.events.forEach(e => {
-            const id = `${e.date}-${e.title}`;
-            e.scrollId = id;
-            if (!byDate[e.date]) byDate[e.date] = [];
-            byDate[e.date].push(e);
-          });
-
-          const grid = [];
-          let date = new Date(start);
-          date.setDate(1);
-          const firstWeekday = (date.getDay() + 6) % 7;
-          let week = new Array(firstWeekday).fill(null);
-
-          while (date <= end) {
-            const dateStr = date.toISOString().split('T')[0];
-            week.push({
-              day: date.getDate(),
-              dateStr,
-              isToday: dateStr === todayStr,
-              events: (byDate[dateStr] || []).sort((a, b) => a.time.localeCompare(b.time))
-            });
-            if (week.length === 7) {
-              grid.push(week);
-              week = [];
-            }
-            date.setDate(date.getDate() + 1);
-          }
-          if (week.length) {
-            while (week.length < 7) week.push(null);
-            grid.push(week);
-          }
-          return grid;
-        }
-      },
-      methods: {
-        scrollTo(dateStr) {
-          const e = this.events.find(e => e.date === dateStr);
-          if (e) {
-            const target = document.getElementById(e.scrollId);
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        },
-        async fetchPage(page = 1) {
-          const [sy, sm, sd] = this.startDate.split('-');
-          const [ey, em, ed] = this.endDate.split('-');
-          const startStr = `${sm}-${sd}-${sy}`;
-          const endStr = `${em}-${ed}-${ey}`;
-
-          const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-            `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
-          )}`;
-
-          try {
-            const res = await fetch(url);
-            const html = await res.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const list = doc.querySelectorAll('ul.eventList li.event');
-            if (!list.length) return false;
-
-            list.forEach(li => {
-              const date = li.querySelector('time.eventDate')?.textContent.trim();
-              const time = li.querySelector('p.eventTime')?.textContent.trim();
-              const title = li.querySelector('p.eventTitle')?.textContent.trim();
-              const place = li.querySelector('p.place')?.textContent.trim();
-              const organizer = li.querySelector('p.organizer')?.textContent.trim();
-              const lowerFields = `${place || ''} ${organizer || ''}`.toLowerCase();
-              if (lowerFields.includes('澳門') || lowerFields.includes('噶地利亞街')) {
-                this.events.push({ date, time, title, place, organizer });
-              }
-            });
-
-            return true;
-          } catch (e) {
-            console.error('錯誤：', e);
-            return false;
-          }
-        },
-        async fetchAllPages() {
-          this.events = [];
-          this.loading = true;
-          let page = 1;
-          while (await this.fetchPage(page)) page++;
-          this.loading = false;
-        },
-        search() {
-          this.fetchAllPages();
-        }
-      },
-      mounted() {
-        this.fetchAllPages();
-      }
-    }).mount('#app');
-  </script>
-</body>
-</html>
+  // 在 fetchPage 的 list.forEach 中，加入配色邏輯：
+  if (!this.organizerColors[organizer]) {
+    this.organizerColors[organizer] = `hsl(${Math.floor(Math.random() * 360)}, 70%, 35%)`;
+  }
+</script>
