@@ -73,7 +73,7 @@
           const endStr = `${end[1]}-${end[2]}-${end[0]}`;
 
           const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-            `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&keyword=%E6%BE%B3%E9%96%80&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
+            `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
           )}`;
 
           try {
@@ -94,7 +94,8 @@
               const place = li.querySelector('p.place')?.textContent.trim();
               const organizer = li.querySelector('p.organizer')?.textContent.trim();
 
-              if (place?.includes('澳門') || organizer?.includes('澳門')) {
+              const lowerFields = `${place || ''} ${organizer || ''}`.toLowerCase();
+              if (lowerFields.includes('澳門') || lowerFields.includes('macau')) {
                 this.events.push({ date, time, title, place, organizer });
               }
             });
