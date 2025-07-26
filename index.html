@@ -11,49 +11,6 @@
       padding: 20px;
       background-color: #f4f4f4;
     }
-    .filters {
-      margin-bottom: 20px;
-    }
-    .filters label {
-      margin-right: 10px;
-    }
-    .calendar-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 30px;
-      background: white;
-    }
-    .calendar-table th,
-    .calendar-table td {
-      border: 1px solid #ccc;
-      width: 14.28%;
-      vertical-align: top;
-      padding: 5px;
-      height: 100px;
-    }
-    .calendar-table th {
-      background-color: #eee;
-      text-align: center;
-    }
-    .day-cell strong {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-    .today-marker {
-      background-color: #007bff;
-      color: white;
-      padding: 2px 5px;
-      border-radius: 4px;
-      display: inline-block;
-    }
-    .calendar-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-top: 4px;
-    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -67,12 +24,36 @@
     th {
       background-color: #eee;
     }
+    .filters {
+      margin-bottom: 20px;
+    }
+    .filters label {
+      margin-right: 10px;
+    }
     .map-link {
       text-decoration: none;
       font-size: 18px;
     }
-    .month-block {
-      margin-bottom: 40px;
+    .calendar-table th,
+    .calendar-table td {
+      width: 14.28%;
+      border: 1px solid #ccc;
+      vertical-align: top;
+      height: 80px;
+      padding: 4px;
+      text-align: left;
+    }
+    .calendar-table th {
+      background-color: #eee;
+    }
+    .calendar-day {
+      cursor: pointer;
+    }
+    .today-marker {
+      background-color: #007bff;
+      color: white;
+      padding: 1px 4px;
+      border-radius: 4px;
     }
   </style>
 </head>
@@ -92,36 +73,29 @@
       <button @click="search">查詢</button>
     </div>
 
-    <div class="custom-calendar">
-      <div v-for="(month, mi) in calendarData" :key="mi" class="month-block">
-        <h3>{{ month.label }}</h3>
-        <table class="calendar-table">
-          <thead>
-            <tr>
-              <th v-for="day in weekDays" :key="day">{{ day }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(week, wi) in month.weeks" :key="wi">
-              <td v-for="(day, di) in week" :key="di" @click="scrollTo(day)" style="cursor: pointer;">
-                <div v-if="day" class="day-cell">
-                  <strong>
-                    <span v-if="day.isToday" class="today-marker">{{ day.day }} 今日</span>
-                    <span v-else>{{ day.day }}</span>
-                  </strong>
-                  <div v-for="(e, i) in day.events.slice(0,1)" :key="i" class="calendar-dot" :style="{ backgroundColor: e.color }"></div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <table class="calendar-table">
+      <thead>
+        <tr>
+          <th v-for="day in weekDays" :key="day">{{ day }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(week, wi) in calendarGrid" :key="wi">
+          <td v-for="(day, di) in week" :key="di" class="calendar-day" @click="scrollTo(day.dateStr)">
+            <div v-if="day">
+              <span :class="{ 'today-marker': day.isToday }">{{ day.day }}</span>
+              <div v-if="day.events.length">
+                {{ day.events[0].organizer.charAt(0) }}
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <p v-if="loading">載入中...</p>
     <p v-if="!loading && events.length === 0">目前無澳門活動</p>
-
-    <table v-if="events.length" ref="eventTable">
+    <table v-if="events.length">
       <thead>
         <tr>
           <th>日期</th>
@@ -161,74 +135,59 @@
         };
       },
       computed: {
-        calendarData() {
+        calendarGrid() {
           const start = new Date(this.startDate);
           const end = new Date(this.endDate);
-          const byDay = {};
           const todayStr = new Date().toISOString().split('T')[0];
-
-          const organizerColors = {};
-          const colorList = ['#e6194b','#3cb44b','#ffe119','#4363d8','#f58231','#911eb4','#46f0f0','#f032e6','#bcf60c','#fabebe','#008080'];
-          let colorIndex = 0;
-
+          const byDate = {};
           this.events.forEach(e => {
-            if (!organizerColors[e.organizer]) {
-              organizerColors[e.organizer] = colorList[colorIndex % colorList.length];
-              colorIndex++;
-            }
-            const color = organizerColors[e.organizer];
-            const scrollId = `${e.date}-${e.title}`;
-            byDay[e.date] = byDay[e.date] || [];
-            byDay[e.date].push({ ...e, color, scrollId });
-            e.scrollId = scrollId; // for table row
+            const id = `${e.date}-${e.title}`;
+            e.scrollId = id;
+            if (!byDate[e.date]) byDate[e.date] = [];
+            byDate[e.date].push(e);
           });
 
-          const result = [];
-          const date = new Date(start);
+          const grid = [];
+          let date = new Date(start);
           date.setDate(1);
+          const firstWeekday = (date.getDay() + 6) % 7;
+          let week = new Array(firstWeekday).fill(null);
+
           while (date <= end) {
-            const year = date.getFullYear();
-            const month = date.getMonth();
-            const label = `${year} 年 ${month + 1} 月`;
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const firstWeekday = (firstDay.getDay() + 6) % 7;
-            const weeks = [];
-            let week = new Array(firstWeekday).fill(null);
-            for (let d = 1; d <= lastDay.getDate(); d++) {
-              const current = new Date(year, month, d);
-              const dateStr = current.toISOString().split('T')[0];
-              const events = byDay[dateStr] || [];
-              week.push({ day: d, events, isToday: dateStr === todayStr });
-              if (week.length === 7) {
-                weeks.push(week);
-                week = [];
-              }
+            const dateStr = date.toISOString().split('T')[0];
+            week.push({
+              day: date.getDate(),
+              dateStr,
+              isToday: dateStr === todayStr,
+              events: (byDate[dateStr] || []).sort((a, b) => a.time.localeCompare(b.time))
+            });
+            if (week.length === 7) {
+              grid.push(week);
+              week = [];
             }
-            if (week.length > 0) {
-              while (week.length < 7) week.push(null);
-              weeks.push(week);
-            }
-            result.push({ label, weeks });
-            date.setMonth(date.getMonth() + 1);
+            date.setDate(date.getDate() + 1);
           }
-          return result;
+          if (week.length) {
+            while (week.length < 7) week.push(null);
+            grid.push(week);
+          }
+          return grid;
         }
       },
       methods: {
-        scrollTo(day) {
-          if (day && day.events.length) {
-            const target = document.getElementById(day.events[0].scrollId);
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+        scrollTo(dateStr) {
+          const e = this.events.find(e => e.date === dateStr);
+          if (e) {
+            const target = document.getElementById(e.scrollId);
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         },
         async fetchPage(page = 1) {
-          const start = this.startDate.split('-');
-          const end = this.endDate.split('-');
-          const startStr = `${start[1]}-${start[2]}-${start[0]}`;
-          const endStr = `${end[1]}-${end[2]}-${end[0]}`;
+          const [sy, sm, sd] = this.startDate.split('-');
+          const [ey, em, ed] = this.endDate.split('-');
+          const startStr = `${sm}-${sd}-${sy}`;
+          const endStr = `${em}-${ed}-${ey}`;
+
           const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
             `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
           )}`;
@@ -239,8 +198,7 @@
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             const list = doc.querySelectorAll('ul.eventList li.event');
-
-            if (list.length === 0) return false;
+            if (!list.length) return false;
 
             list.forEach(li => {
               const date = li.querySelector('time.eventDate')?.textContent.trim();
