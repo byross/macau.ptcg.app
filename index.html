@@ -88,8 +88,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td v-for="(day, di) in calendarWeek" :key="di" class="calendar-day" @click="scrollTo(day && day.dateStr)">
+        <tr v-for="(week, wi) in calendarWeeks" :key="wi">
+          <td v-for="(day, di) in week" :key="di" class="calendar-day" @click="scrollTo(day && day.dateStr)">
             <div v-if="day">
               <span :class="{ 'today-marker': day.isToday }">{{ day.day }}</span>
               <div v-if="day.events.length">
@@ -147,7 +147,7 @@
         };
       },
       computed: {
-        calendarWeek() {
+        calendarWeeks() {
           const today = new Date();
           const todayStr = today.toISOString().split('T')[0];
           const byDate = {};
@@ -158,22 +158,26 @@
             byDate[e.date].push(e);
           });
 
-          const weekStart = new Date(today);
-          weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+          const weeks = [];
+          const start = new Date(today);
+          start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
 
-          const week = [];
-          for (let i = 0; i < 7; i++) {
-            const d = new Date(weekStart);
-            d.setDate(weekStart.getDate() + i);
-            const dateStr = d.toISOString().split('T')[0];
-            week.push({
-              day: d.getDate(),
-              dateStr,
-              isToday: dateStr === todayStr,
-              events: (byDate[dateStr] || []).sort((a, b) => a.time.localeCompare(b.time))
-            });
+          for (let w = 0; w < 6; w++) {
+            const week = [];
+            for (let i = 0; i < 7; i++) {
+              const d = new Date(start);
+              d.setDate(start.getDate() + w * 7 + i);
+              const dateStr = d.toISOString().split('T')[0];
+              week.push({
+                day: d.getDate(),
+                dateStr,
+                isToday: dateStr === todayStr,
+                events: (byDate[dateStr] || []).sort((a, b) => a.time.localeCompare(b.time))
+              });
+            }
+            weeks.push(week);
           }
-          return week;
+          return weeks;
         }
       },
       methods: {
