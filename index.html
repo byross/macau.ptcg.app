@@ -102,10 +102,8 @@
 
   <script>
     const { createApp } = Vue;
-    const { setupCalendar, Calendar } = VCalendar;
 
-    createApp({
-      components: { VCalendar: Calendar },
+    const app = createApp({
       data() {
         const today = new Date();
         const in30days = new Date(Date.now() + 30 * 86400000);
@@ -120,11 +118,25 @@
       },
       computed: {
         calendarAttributes() {
-          return this.events.map(event => ({
-            key: event.date,
-            highlight: true,
-            dates: new Date(event.date)
-          }));
+          const colors = ['#1e90ff', '#28a745', '#dc3545', '#ffc107', '#6f42c1'];
+          const organizers = {};
+
+          this.events.forEach(e => {
+            const org = e.organizer || '未知主辦';
+            if (!organizers[org]) {
+              organizers[org] = {
+                key: org,
+                highlight: {
+                  color: colors[Object.keys(organizers).length % colors.length],
+                  fillMode: 'light'
+                },
+                dates: []
+              };
+            }
+            organizers[org].dates.push(new Date(e.date));
+          });
+
+          return Object.values(organizers);
         }
       },
       methods: {
@@ -189,10 +201,11 @@
         }
       },
       mounted() {
-        setupCalendar();
         this.fetchAllPages();
       }
-    }).mount('#app');
+    });
+
+    app.use(VCalendar).mount('#app');
   </script>
 </body>
 </html>
