@@ -149,7 +149,7 @@
           loading: false,
           startDate: today.toISOString().split('T')[0],
           endDate: in30days.toISOString().split('T')[0],
-          weekDays: ['日', '一', '二', '三', '四', '五', '六'],
+          weekDays: ['一', '二', '三', '四', '五', '六', '日'],
           organizerColors: {},
         };
       },
@@ -167,7 +167,7 @@
 
           const weeks = [];
           const start = new Date(today);
-          start.setDate(start.getDate() - start.getDay());
+          start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
 
           for (let w = 0; w < 6; w++) {
             const week = [];
@@ -218,7 +218,8 @@
               const rawDate = li.querySelector('time.eventDate')?.textContent.trim();
               const [mm, dd] = rawDate.split('-');
               const yyyy = new Date().getFullYear();
-              const date = `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+              const dateObj = new Date(`${yyyy}-${mm}-${dd}`);
+              const date = dateObj.toISOString().split('T')[0];
 
               const time = li.querySelector('p.eventTime')?.textContent.trim();
               const title = li.querySelector('p.eventTitle')?.textContent.trim();
