@@ -20,6 +20,7 @@
       padding: 8px 12px;
       border: 1px solid #ccc;
       text-align: left;
+      vertical-align: top;
     }
     th {
       background-color: #eee;
@@ -34,14 +35,19 @@
       text-decoration: none;
       font-size: 18px;
     }
+    .calendar-table {
+      table-layout: fixed;
+      margin-bottom: 40px;
+    }
     .calendar-table th,
     .calendar-table td {
       width: 14.28%;
       border: 1px solid #ccc;
       vertical-align: top;
-      height: 80px;
+      height: 100px;
       padding: 4px;
       text-align: left;
+      box-sizing: border-box;
     }
     .calendar-table th {
       background-color: #eee;
@@ -62,6 +68,7 @@
       font-size: 12px;
       color: #fff;
       margin: 2px 2px 0 0;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -142,7 +149,7 @@
           loading: false,
           startDate: today.toISOString().split('T')[0],
           endDate: in30days.toISOString().split('T')[0],
-          weekDays: ['一', '二', '三', '四', '五', '六', '日'],
+          weekDays: ['日', '一', '二', '三', '四', '五', '六'],
           organizerColors: {},
         };
       },
@@ -160,7 +167,7 @@
 
           const weeks = [];
           const start = new Date(today);
-          start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+          start.setDate(start.getDate() - start.getDay());
 
           for (let w = 0; w < 6; w++) {
             const week = [];
