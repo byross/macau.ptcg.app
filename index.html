@@ -59,7 +59,6 @@
       vertical-align: top;
       height: 90px;
       padding: 6px;
-      text-align: left;
       font-size: 0.9rem;
       box-sizing: border-box;
     }
@@ -72,11 +71,17 @@
       cursor: pointer;
     }
     .calendar-day.today {
-      background-color: #1c1c1e;
-      color: white;
+      background-color: #DDDEAB;
+      color: #1c1c1e;
       border-radius: 0.5rem;
     }
-    .today-marker {
+    .calendar-day > div {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .calendar-day > div > .today-marker {
+      align-self: flex-end;
       font-weight: 600;
     }
     .tag {
@@ -103,6 +108,13 @@
     p {
       text-align: center;
       color: #999;
+    }
+    /* 動態同日底色：由 JS 動態加入 .same-day-bg1 / .same-day-bg2 類 */
+    .same-day-bg1 {
+      background-color: #f4f4f4;
+    }
+    .same-day-bg2 {
+      background-color: #ffffff;
     }
   </style>
 </head>
@@ -160,9 +172,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="event in events"
+        <tr v-for="(event, index) in events"
             :key="event.title + event.datetime"
-            :id="event.scrollId">
+            :id="event.scrollId"
+            :class="getDateRowClass(index)">
           <td>{{ event.date }}</td>
           <td>{{ event.time }}</td>
           <td>{{ event.organizer }}</td>
@@ -237,6 +250,14 @@
             if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         },
+        getDateRowClass(index) {
+          const curr = this.events[index];
+          const prev = this.events[index - 1];
+          if (!prev || curr.date !== prev.date) {
+            this._bgToggle = !this._bgToggle;
+          }
+          return this._bgToggle ? 'same-day-bg1' : 'same-day-bg2';
+        },
         async fetchPage(page = 1) {
           const [sy, sm, sd] = this.startDate.split('-');
           const [ey, em, ed] = this.endDate.split('-');
@@ -283,6 +304,7 @@
           }
         },
         async fetchAllPages() {
+          this._bgToggle = true;
           this.events = [];
           this.loading = true;
           let page = 1;
