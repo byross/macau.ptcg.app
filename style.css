@@ -1,103 +1,44 @@
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  margin: 0;
-  padding: 20px;
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  padding: 10px;
   background-color: #f2f2f7;
-  color: #1c1c1e;
+  border-radius: 16px;
 }
-h1 {
-  font-size: 20px;
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  margin-bottom: 10px;
-}
-.filters {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-button {
-  padding: 5px 10px;
-  background-color: #007aff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.calendar-table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-  font-family: inherit;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  background-color: white;
-}
-.calendar-table th,
-.calendar-table td {
-  border: 1px solid #ddd;
-  padding: 4px;
-  vertical-align: top;
-  height: auto;
-  font-family: inherit;
+  font-size: 14px;
+  color: #999;
+  padding: 4px 10px;
 }
 
-.calendar-table th {
-height: auto;
-
-}
-.calendar-table td {
-  text-align: right;
-  padding-right: 6px;
-}
-.calendar-table td .tag {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #fff;
-  margin: 2px 2px 0 0;
-  float: left;
-}
-.today {
-  background-color: #DDDEAB !important;
-}
-.today-marker {
-  font-weight: bold;
-}
-.event-list table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-family: inherit;
-  margin-bottom: 20px;
-  background-color: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  overflow: hidden;
-  padding: 15px;
-}
-.event-list table:nth-child(odd) {
-  background-color: #f9f9fa;
-}
-
-
-/* Enhanced styles for calendar event tags */
 .day-card {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
   flex-wrap: wrap;
-  min-height: 70px;
+  min-height: 80px;
   border-radius: 12px;
   background-color: white;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   padding: 6px;
   overflow: visible;
+}
+
+.day-card.today {
+  background-color: #DDDEAB;
+}
+
+.day-number {
+  align-self: flex-end;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .event-tag {
