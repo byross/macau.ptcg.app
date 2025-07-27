@@ -25,10 +25,6 @@ createApp({
         byDate[e.date].push(e);
       });
 
-      flatDays() {
-        return this.calendarWeeks.flat();
-      };
-
       const weeks = [];
       const firstDate = new Date(this.startDate);
       firstDate.setDate(firstDate.getDate() - ((firstDate.getDay() + 6) % 7));
@@ -49,6 +45,9 @@ createApp({
         weeks.push(week);
       }
       return weeks;
+    },
+    flatDays() {
+      return this.calendarWeeks.flat();
     }
   },
   methods: {
@@ -67,7 +66,7 @@ createApp({
       const endStr = `${em}-${ed}-${ey}`;
 
       const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-              `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
+        `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
       )}`;
 
       try {
