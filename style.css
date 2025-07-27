@@ -26,49 +26,47 @@ button {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-.calendar-table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  gap: 6px;
   margin-bottom: 20px;
-  font-family: inherit;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  background-color: white;
 }
-.calendar-table th,
-.calendar-table td {
-  border: 1px solid #ddd;
-  padding: 4px;
-  vertical-align: top;
-  height: auto;
-  font-family: inherit;
-}
-
-.calendar-table th {
-height: auto;
-
-}
-.calendar-table td {
-  text-align: right;
-  padding-right: 6px;
-}
-.calendar-table td .tag {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: 4px;
+.day-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  padding: 6px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
   font-size: 12px;
+  position: relative;
+  cursor: pointer;
+}
+.day-card.today {
+  background-color: #DDDEAB;
+}
+.day-number {
+  font-weight: 500;
+}
+.event-tag {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #007aff;
   color: #fff;
-  margin: 2px 2px 0 0;
-  float: left;
+  font-size: 12px;
+  text-align: center;
+  line-height: 20px;
 }
-.today {
-  background-color: #DDDEAB !important;
-}
-.today-marker {
-  font-weight: bold;
-}
+
 .event-list table {
   width: 100%;
   border-collapse: separate;

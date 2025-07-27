@@ -34,28 +34,24 @@
       <label><input type="date" v-model="endDate"></label>
       <button @click="search">查詢</button>
     </div>
-    <table class="calendar-table">
-      <thead>
-        <tr>
-          <th v-for="day in weekDays" :key="day">{{ day }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(week, wi) in calendarWeeks" :key="wi">
-          <td v-for="(day, di) in week" :key="di" class="calendar-day" :class="{ today: day.isToday }" @click="scrollTo(day && day.dateStr)">
-            <div v-if="day">
-              <span class="today-marker">{{ day.day }}</span>
-              <div v-if="day.events.length">
-                <span v-for="(e, ei) in day.events" :key="ei" class="tag"
-                      :style="{ backgroundColor: organizerColors[e.organizer] || '#333' }">
-                  {{ e.organizer.charAt(0) }}
-                </span>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    
+    <div class="calendar-grid">
+      <div v-for="(week, wi) in calendarWeeks" :key="wi">
+        <div v-for="(day, di) in week"
+             :key="di"
+             class="day-card"
+             :class="{ today: day && day.isToday }"
+             @click="scrollTo(day && day.dateStr)">
+          <div class="day-number">{{ day.day }}</div>
+          <div v-if="day.events.length"
+               v-for="(e, ei) in day.events"
+               :key="ei"
+               class="event-tag">
+            {{ e.organizer.charAt(0) }}
+          </div>
+        </div>
+      </div>
+    </div>
 
     <p v-if="loading">載入中...</p>
     <p v-if="!loading && events.length === 0">網絡繁忙，請重新載入</p>
