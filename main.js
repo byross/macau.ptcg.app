@@ -81,7 +81,7 @@ createApp({
           const rawDate = li.querySelector('time.eventDate')?.textContent.trim();
           const [mm, dd] = rawDate.split('-');
           const yyyy = new Date().getFullYear();
-          const dateObj = new Date(\`\${yyyy}-\${mm}-\${dd}T12:00:00\`);
+          const dateObj = new Date(`${yyyy}-${mm}-${dd}T12:00:00`);
           const date = dateObj.toISOString().split('T')[0];
 
           const time = li.querySelector('p.eventTime')?.textContent.trim();
@@ -89,10 +89,11 @@ createApp({
           const place = li.querySelector('p.place')?.textContent.trim();
           const organizer = li.querySelector('p.organizer')?.textContent.trim();
 
-          const lowerFields = \`\${place || ''} \${organizer || ''}\`.toLowerCase();
+          const lowerFields = `${place || ''} ${organizer || ''}`.toLowerCase();
+
           if (lowerFields.includes('澳門') || lowerFields.includes('噶地利亞街') || lowerFields.includes('祐漢新村')) {
             if (!this.organizerColors[organizer]) {
-              this.organizerColors[organizer] = \`hsl(\${Math.floor(Math.random() * 360)}, 70%, 35%)\`;
+              this.organizerColors[organizer] = `hsl(${Math.floor(Math.random() * 360)}, 70%, 35%)`;
             }
             this.events.push({ date, time, title, place, organizer, code });
           }
