@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>澳門地區寶可夢卡牌活動查詢</title>
+  <title>澳門地區官方寶可夢卡牌活動</title>
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <style>
     body {
@@ -78,11 +78,10 @@
 
     <div class="filters">
       <label>
-        起始日期：
         <input type="date" v-model="startDate">
       </label>
+       到 
       <label>
-        結束日期：
         <input type="date" v-model="endDate">
       </label>
       <button @click="search">查詢</button>
@@ -112,7 +111,7 @@
     </table>
 
     <p v-if="loading">載入中...</p>
-    <p v-if="!loading && events.length === 0">目前無澳門活動</p>
+    <p v-if="!loading && events.length === 0">網絡繁忙，請重新載入</p>
     <table v-if="events.length">
       <thead>
         <tr>
