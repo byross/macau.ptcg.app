@@ -1,13 +1,13 @@
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open('static-cache').then(cache => {
-      return cache.addAll(['.', 'index.html', 'manifest.json', 'style.css', 'main.js']);
+
+self.addEventListener("install", e => {
+  e.waitUntil(
+    caches.open("ptcg-cache").then(cache => {
+      return cache.addAll(["/", "/index.html", "/style.css", "/main.js", "/manifest.json"]);
     })
   );
 });
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(res => res || fetch(event.request))
+self.addEventListener("fetch", e => {
+  e.respondWith(
+    caches.match(e.request).then(response => response || fetch(e.request))
   );
 });

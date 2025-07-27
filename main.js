@@ -1,5 +1,4 @@
 const { createApp } = Vue;
-
 createApp({
   data() {
     const today = new Date();
@@ -61,9 +60,8 @@ createApp({
       const [ey, em, ed] = this.endDate.split('-');
       const startStr = `${sm}-${sd}-${sy}`;
       const endStr = `${em}-${ed}-${ey}`;
-
       const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-        \`https://asia.pokemon-card.com/hk/event-search/search/?pageNo=\${page}&startDate=\${startStr}&endDate=\${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23\`
+        `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
       )}`;
 
       try {
@@ -106,24 +104,19 @@ createApp({
       this.loading = true;
       let page = 1;
       while (await this.fetchPage(page)) page++;
-      localStorage.setItem('gym_events_cache', JSON.stringify(this.events));
       this.loading = false;
     },
     search() {
       this.fetchAllPages();
     },
     rowBgClass(index, event) {
-      const prev = this.events[index - 1];
-      if (!prev || prev.date !== event.date) this._rowStyleToggle = !this._rowStyleToggle;
-      return this._rowStyleToggle ? 'same-day-bg1' : 'same-day-bg2';
+      if (index === 0 || this.events[index].date !== this.events[index - 1].date) {
+        return 'first-of-day';
+      }
+      return '';
     }
   },
   mounted() {
-    const cached = localStorage.getItem('gym_events_cache');
-    if (cached) {
-      this.events = JSON.parse(cached);
-    }
-    this._rowStyleToggle = false;
     this.fetchAllPages();
   }
 }).mount('#app');

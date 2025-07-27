@@ -6,15 +6,68 @@
   <title>澳門地區官方GYM寶可夢卡牌活動</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="寶可夢活動">
   <meta name="theme-color" content="#f2f2f7">
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
-  <script defer src="main.js"></script>
+  <script src="main.js" defer></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app">Loading...</div>
+  <div id="app">
+    <h1>澳門地區官方GYM寶可夢卡牌活動</h1>
+    <div class="filters">
+      <label><input type="date" v-model="startDate"></label>
+      到
+      <label><input type="date" v-model="endDate"></label>
+      <button @click="search">查詢</button>
+    </div>
+    <table class="calendar-table">
+      <thead>
+        <tr>
+          <th v-for="day in weekDays" :key="day">{{ day }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(week, wi) in calendarWeeks" :key="wi">
+          <td v-for="(day, di) in week" :key="di" class="calendar-day" :class="{ today: day.isToday }" @click="scrollTo(day && day.dateStr)">
+            <div v-if="day">
+              <span class="today-marker">{{ day.day }}</span>
+              <div v-if="day.events.length">
+                <span v-for="(e, ei) in day.events" :key="ei" class="tag"
+                      :style="{ backgroundColor: organizerColors[e.organizer] || '#333' }">
+                  {{ e.organizer.charAt(0) }}
+                </span>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p v-if="loading">載入中...</p>
+    <p v-if="!loading && events.length === 0">網絡繁忙，請重新載入</p>
+
+    <div class="event-list">
+      <table v-for="(event, index) in events" :key="event.title + event.datetime" :id="event.scrollId" :class="rowBgClass(index, event)">
+        <tbody>
+          <tr>
+            <td colspan="2">
+              <span style="font-size: 16px">{{ event.date }}</span>
+              <span style="font-size: 11px">{{ event.time }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td width="70%" style="font-size: 20px"><strong>{{ event.organizer }}</strong></td>
+            <td width="30%" style="font-size: 10px">{{ event.title }}</td>
+          </tr>
+          <tr><td colspan="2" style="padding: 8px 0">&nbsp;</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
