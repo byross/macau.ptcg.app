@@ -73,6 +73,11 @@ createApp({
         if (!list.length) return false;
 
         list.forEach(li => {
+
+          const url = li.querySelector('a')?.getAttribute('href');
+          const match = url?.match(/event-search\/(\d+)/);
+          const code = match ? match[1] : '';
+
           const rawDate = li.querySelector('time.eventDate')?.textContent.trim();
           const [mm, dd] = rawDate.split('-');
           const yyyy = new Date().getFullYear();
@@ -89,7 +94,7 @@ createApp({
             if (!this.organizerColors[organizer]) {
               this.organizerColors[organizer] = `hsl(${Math.floor(Math.random() * 360)}, 70%, 35%)`;
             }
-            this.events.push({ date, time, title, place, organizer });
+            this.events.push({ date, time, title, place, organizer, code });
           }
         });
 

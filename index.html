@@ -61,7 +61,11 @@
           </tr>
           <tr>
             <td width="70%" style="font-size: 20px"><strong>{{ event.organizer }}</strong></td>
-            <td width="30%" style="font-size: 10px">{{ event.title }}</td>
+            <td width="30%" style="font-size: 10px">
+              <a :href="`https://asia.pokemon-card.com/hk/event-search/${event.code}/`" target="_blank" style="text-decoration: none; color: inherit;">
+                {{ event.title }}
+              </a>
+            </td>
           </tr>
         </tbody>
       </table>
