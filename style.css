@@ -80,20 +80,20 @@ button {
 }
 
 .day-card {
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  padding: 6px;
-  height: 60px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  font-size: 12px;
-  position: relative;
-  cursor: pointer;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 4px;
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  min-height: 70px;
+  overflow: hidden;
 }
+
+
+
+
 .day-card.today {
   background-color: #DDDEAB;
 }
@@ -104,17 +104,18 @@ button {
   text-align: right;
 }
 .event-tag {
-  margin: 2px 2px 0 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  display: inline-block;
   background-color: #007aff;
-  color: #fff;
+  color: white;
   font-size: 12px;
-  text-align: center;
-  line-height: 20px;
+  padding: 1px 5px;
+  margin: 2px 2px 0 0;
+  border-radius: 8px;
+  white-space: nowrap;
 }
-
+.day-card > div.event-tag {
+  margin-right: auto; /* 向左對齊 */
+}
 .event-list table {
   width: 100%;
   border-collapse: separate;

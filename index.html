@@ -46,7 +46,7 @@
            @click="scrollTo(day && day.dateStr)">
         <div class="day-number">{{ day?.day || '' }}</div>
         <div v-if="day && day.events.length"
-             v-for="(e, ei) in day.events.slice(0, 3)"
+             v-for="(e, ei) in day.events.slice(0, 10)"
              :key="ei"
              class="event-tag">
           {{ e.organizer.charAt(0) }}
