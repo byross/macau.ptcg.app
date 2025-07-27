@@ -60,24 +60,32 @@
     <p v-if="!loading && events.length === 0">網絡繁忙，請重新載入</p>
 
     <div class="event-list">
-      <a :href="`https://asia.pokemon-card.com/hk/event-search/${event.code}/`" target="_blank" style="text-decoration: none; color: inherit;">
-        <table v-for="(event, index) in events" :key="event.title + event.datetime" :id="event.scrollId" :class="rowBgClass(index, event)">
-        <tbody>
-          <tr>
-            <td colspan="2">
-              <span style="font-size: 16px">{{ event.date }}</span>
-              <span style="font-size: 11px">{{ event.time }}</span>
-            </td>
-          </tr>
-          <tr>
-            <td width="70%" style="font-size: 20px"><strong>{{ event.organizer }}</strong></td>
-            <td width="30%" style="font-size: 10px">{{ event.title }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <a v-for="(event, index) in events"
+         :key="event.title + event.datetime"
+         :id="event.scrollId"
+         :href="`https://asia.pokemon-card.com/hk/event-search/${event.code}/`"
+         target="_blank"
+         style="text-decoration: none; color: inherit; display: block;">
+        <table :class="rowBgClass(index, event)">
+          <tbody>
+            <tr>
+              <td colspan="2">
+                <span style="font-size: 16px">{{ event.date }}</span>
+                <span style="font-size: 11px">{{ event.time }}</span>
+              </td>
+            </tr>
+            <tr>
+              <td width="70%" style="font-size: 20px"><strong>{{ event.organizer }}</strong></td>
+              <td width="30%" style="font-size: 10px">{{ event.title }}</td>
+            </tr>
+            <tr><td colspan="2" style="padding: 8px 0">&nbsp;</td></tr>
+          </tbody>
+        </table>
       </a>
     </div>
+    
   </div>
+
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
