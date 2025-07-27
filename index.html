@@ -8,67 +8,100 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f4f4f4;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 1rem;
+      background-color: #f8f8f8;
+      color: #1c1c1e;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
-    th, td {
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      background-color: #eee;
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 1rem;
     }
     .filters {
-      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
     }
-    .filters label {
-      margin-right: 10px;
+    .filters input[type="date"] {
+      font-size: 1rem;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      background-color: #fff;
     }
-    .map-link {
-      text-decoration: none;
-      font-size: 18px;
+    .filters button {
+      padding: 0.4rem 1rem;
+      font-size: 1rem;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
     }
-    .calendar-table {
-      table-layout: fixed;
-      margin-bottom: 40px;
+    .calendar-table, table {
+      width: 100%;
+      border-spacing: 0;
+      background-color: white;
+      border-radius: 1rem;
+      overflow: hidden;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
     .calendar-table th,
     .calendar-table td {
       width: 14.28%;
-      border: 1px solid #ccc;
+      border: 1px solid #e5e5ea;
       vertical-align: top;
-      padding: 4px;
+      height: 90px;
+      padding: 6px;
       text-align: left;
+      font-size: 0.9rem;
       box-sizing: border-box;
     }
     .calendar-table th {
-      background-color: #eee;
+      background-color: #f2f2f7;
+      text-align: center;
+      font-weight: 500;
     }
     .calendar-day {
       cursor: pointer;
     }
     .today-marker {
-      background-color: #007bff;
+      background-color: #007aff;
       color: white;
-      padding: 1px 4px;
-      border-radius: 4px;
+      padding: 2px 6px;
+      border-radius: 0.75rem;
+      font-size: 0.8rem;
     }
     .tag {
       display: inline-block;
       padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
+      border-radius: 0.5rem;
+      font-size: 0.7rem;
       color: #fff;
       margin: 2px 2px 0 0;
       white-space: nowrap;
+    }
+    table th {
+      background-color: #f2f2f7;
+      font-weight: 500;
+    }
+    table td, table th {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+    .map-link {
+      text-decoration: none;
+      font-size: 1.2rem;
+    }
+    p {
+      text-align: center;
+      color: #999;
     }
   </style>
 </head>
@@ -77,12 +110,9 @@
     <h1>澳門地區官方GYM寶可夢卡牌活動</h1>
 
     <div class="filters">
-      <label>
-        <input type="date" v-model="startDate">
-      </label>到
-      <label>
-        <input type="date" v-model="endDate">
-      </label>
+      <label><input type="date" v-model="startDate"></label>
+      到
+      <label><input type="date" v-model="endDate"></label>
       <button @click="search">查詢</button>
     </div>
 
@@ -111,6 +141,7 @@
 
     <p v-if="loading">載入中...</p>
     <p v-if="!loading && events.length === 0">網絡繁忙，請重新載入</p>
+
     <table v-if="events.length">
       <thead>
         <tr>
@@ -135,126 +166,125 @@
     </table>
   </div>
 
-<script>
-  const { createApp } = Vue;
+  <script>
+    const { createApp } = Vue;
 
-  createApp({
-    data() {
-      const today = new Date();
-      const in30days = new Date(Date.now() + 30 * 86400000);
-      return {
-        events: [],
-        loading: false,
-        startDate: today.toISOString().split('T')[0],
-        endDate: in30days.toISOString().split('T')[0],
-        weekDays: ['一', '二', '三', '四', '五', '六', '日'],
-        organizerColors: {},
-      };
-    },
-    computed: {
-      calendarWeeks() {
+    createApp({
+      data() {
         const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
-        const byDate = {};
-        this.events.forEach(e => {
-          const id = `${e.date}-${e.title}`;
-          e.scrollId = id;
-          if (!byDate[e.date]) byDate[e.date] = [];
-          byDate[e.date].push(e);
-        });
-
-        const weeks = [];
-        const firstDate = new Date(this.startDate);
-        firstDate.setDate(firstDate.getDate() - ((firstDate.getDay() + 6) % 7));
-
-        for (let w = 0; w < 6; w++) {
-          const week = [];
-          for (let i = 0; i < 7; i++) {
-            const d = new Date(firstDate);
-            d.setDate(firstDate.getDate() + w * 7 + i);
-            const dateStr = d.toISOString().split('T')[0];
-            week.push({
-              day: d.getDate(),
-              dateStr,
-              isToday: dateStr === todayStr,
-              events: (byDate[dateStr] || []).sort((a, b) => a.time.localeCompare(b.time))
-            });
-          }
-          weeks.push(week);
-        }
-        return weeks;
-      }
-    },
-    methods: {
-      scrollTo(dateStr) {
-        if (!dateStr) return;
-        const e = this.events.find(e => e.date === dateStr);
-        if (e) {
-          const target = document.getElementById(e.scrollId);
-          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        const in30days = new Date(Date.now() + 30 * 86400000);
+        return {
+          events: [],
+          loading: false,
+          startDate: today.toISOString().split('T')[0],
+          endDate: in30days.toISOString().split('T')[0],
+          weekDays: ['一', '二', '三', '四', '五', '六', '日'],
+          organizerColors: {},
+        };
       },
-      async fetchPage(page = 1) {
-        const [sy, sm, sd] = this.startDate.split('-');
-        const [ey, em, ed] = this.endDate.split('-');
-        const startStr = `${sm}-${sd}-${sy}`;
-        const endStr = `${em}-${ed}-${ey}`;
-
-        const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-          `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
-        )}`;
-
-        try {
-          const res = await fetch(url);
-          const html = await res.text();
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const list = doc.querySelectorAll('ul.eventList li.event');
-          if (!list.length) return false;
-
-          list.forEach(li => {
-            const rawDate = li.querySelector('time.eventDate')?.textContent.trim();
-            const [mm, dd] = rawDate.split('-');
-            const yyyy = new Date().getFullYear();
-            const dateObj = new Date(`${yyyy}-${mm}-${dd}T12:00:00`); // 加入中午以避免時區轉換提早一天
-            const date = dateObj.toISOString().split('T')[0];
-
-            const time = li.querySelector('p.eventTime')?.textContent.trim();
-            const title = li.querySelector('p.eventTitle')?.textContent.trim();
-            const place = li.querySelector('p.place')?.textContent.trim();
-            const organizer = li.querySelector('p.organizer')?.textContent.trim();
-            const lowerFields = `${place || ''} ${organizer || ''}`.toLowerCase();
-
-            if (lowerFields.includes('澳門') || lowerFields.includes('噶地利亞街') || lowerFields.includes('祐漢新村'))  {
-              if (!this.organizerColors[organizer]) {
-                this.organizerColors[organizer] = `hsl(${Math.floor(Math.random() * 360)}, 70%, 35%)`;
-              }
-              this.events.push({ date, time, title, place, organizer });
-            }
+      computed: {
+        calendarWeeks() {
+          const today = new Date();
+          const todayStr = today.toISOString().split('T')[0];
+          const byDate = {};
+          this.events.forEach(e => {
+            const id = `${e.date}-${e.title}`;
+            e.scrollId = id;
+            if (!byDate[e.date]) byDate[e.date] = [];
+            byDate[e.date].push(e);
           });
 
-          return true;
-        } catch (e) {
-          console.error('錯誤：', e);
-          return false;
+          const weeks = [];
+          const firstDate = new Date(this.startDate);
+          firstDate.setDate(firstDate.getDate() - ((firstDate.getDay() + 6) % 7));
+
+          for (let w = 0; w < 6; w++) {
+            const week = [];
+            for (let i = 0; i < 7; i++) {
+              const d = new Date(firstDate);
+              d.setDate(firstDate.getDate() + w * 7 + i);
+              const dateStr = d.toISOString().split('T')[0];
+              week.push({
+                day: d.getDate(),
+                dateStr,
+                isToday: dateStr === todayStr,
+                events: (byDate[dateStr] || []).sort((a, b) => a.time.localeCompare(b.time))
+              });
+            }
+            weeks.push(week);
+          }
+          return weeks;
         }
       },
-      async fetchAllPages() {
-        this.events = [];
-        this.loading = true;
-        let page = 1;
-        while (await this.fetchPage(page)) page++;
-        this.loading = false;
+      methods: {
+        scrollTo(dateStr) {
+          if (!dateStr) return;
+          const e = this.events.find(e => e.date === dateStr);
+          if (e) {
+            const target = document.getElementById(e.scrollId);
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        },
+        async fetchPage(page = 1) {
+          const [sy, sm, sd] = this.startDate.split('-');
+          const [ey, em, ed] = this.endDate.split('-');
+          const startStr = `${sm}-${sd}-${sy}`;
+          const endStr = `${em}-${ed}-${ey}`;
+
+          const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
+            `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
+          )}`;
+
+          try {
+            const res = await fetch(url);
+            const html = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const list = doc.querySelectorAll('ul.eventList li.event');
+            if (!list.length) return false;
+
+            list.forEach(li => {
+              const rawDate = li.querySelector('time.eventDate')?.textContent.trim();
+              const [mm, dd] = rawDate.split('-');
+              const yyyy = new Date().getFullYear();
+              const dateObj = new Date(`${yyyy}-${mm}-${dd}T12:00:00`); // 加入中午以避免時區轉換提早一天
+              const date = dateObj.toISOString().split('T')[0];
+
+              const time = li.querySelector('p.eventTime')?.textContent.trim();
+              const title = li.querySelector('p.eventTitle')?.textContent.trim();
+              const place = li.querySelector('p.place')?.textContent.trim();
+              const organizer = li.querySelector('p.organizer')?.textContent.trim();
+              const lowerFields = `${place || ''} ${organizer || ''}`.toLowerCase();
+
+              if (lowerFields.includes('澳門') || lowerFields.includes('噶地利亞街') || lowerFields.includes('祐漢新村'))  {
+                if (!this.organizerColors[organizer]) {
+                  this.organizerColors[organizer] = `hsl(${Math.floor(Math.random() * 360)}, 70%, 35%)`;
+                }
+                this.events.push({ date, time, title, place, organizer });
+              }
+            });
+
+            return true;
+          } catch (e) {
+            console.error('錯誤：', e);
+            return false;
+          }
+        },
+        async fetchAllPages() {
+          this.events = [];
+          this.loading = true;
+          let page = 1;
+          while (await this.fetchPage(page)) page++;
+          this.loading = false;
+        },
+        search() {
+          this.fetchAllPages();
+        }
       },
-      search() {
+      mounted() {
         this.fetchAllPages();
       }
-    },
-    mounted() {
-      this.fetchAllPages();
-    }
-  }).mount('#app');
-</script>
-
+    }).mount('#app');
+  </script>
 </body>
 </html>
