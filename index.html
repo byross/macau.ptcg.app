@@ -121,14 +121,12 @@
 <body>
   <div id="app">
     <h1>澳門地區官方GYM寶可夢卡牌活動</h1>
-
     <div class="filters">
       <label><input type="date" v-model="startDate"></label>
       到
       <label><input type="date" v-model="endDate"></label>
       <button @click="search">查詢</button>
     </div>
-
     <table class="calendar-table">
       <thead>
         <tr>
@@ -137,17 +135,11 @@
       </thead>
       <tbody>
         <tr v-for="(week, wi) in calendarWeeks" :key="wi">
-          <td v-for="(day, di) in week"
-              :key="di"
-              class="calendar-day"
-              :class="{ today: day && day.isToday }"
-              @click="scrollTo(day && day.dateStr)">
+          <td v-for="(day, di) in week" :key="di" class="calendar-day" :class="{ today: day.isToday }" @click="scrollTo(day && day.dateStr)">
             <div v-if="day">
               <span class="today-marker">{{ day.day }}</span>
               <div v-if="day.events.length">
-                <span v-for="(e, ei) in day.events"
-                      :key="ei"
-                      class="tag"
+                <span v-for="(e, ei) in day.events" :key="ei" class="tag"
                       :style="{ backgroundColor: organizerColors[e.organizer] || '#333' }">
                   {{ e.organizer.charAt(0) }}
                 </span>
@@ -160,37 +152,17 @@
 
     <p v-if="loading">載入中...</p>
     <p v-if="!loading && events.length === 0">網絡繁忙，請重新載入</p>
-
-    <table v-if="events.length">
-      <thead>
-        <tr>
-          <th>日期</th>
-          <th>時間</th>
-          <th>主辦</th>
-          <th>活動名稱</th>
-          <th>地點</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(event, index) in events"
-            :key="event.title + event.datetime"
-            :id="event.scrollId"
-            :class="getDateRowClass(index)">
-          <td>{{ event.date }}</td>
-          <td>{{ event.time }}</td>
-          <td>{{ event.organizer }}</td>
-          <td>{{ event.title }}</td>
-          <td>
-            <a class="map-link"
-               :href="`https://www.google.com/maps/search/?q=澳門 ${event.place}`"
-               target="_blank"
-               rel="noopener noreferrer">🗺️</a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="event-list">
+      <div v-for="(event, index) in events" :key="event.title + event.datetime" :id="event.scrollId"
+           class="event-row" :class="rowBgClass(index, event)">
+        <div class="date-time">{{ event.date }}　{{ event.time }}</div>
+        <div class="organizer">{{ event.organizer }}</div>
+        <div class="title">{{ event.title }}
+          <a class="map-link" :href="`https://www.google.com/maps/search/?q=澳門 ${event.place}`" target="_blank">🗺️</a>
+        </div>
+      </div>
+    </div>
   </div>
-
   <script>
     const { createApp } = Vue;
 
@@ -242,6 +214,12 @@
         }
       },
       methods: {
+        rowBgClass(index, event) {
+          const prev = this.events[index - 1];
+          const isSame = prev && prev.date === event.date;
+          if (!isSame) this.lastRowToggle = !this.lastRowToggle;
+          return this.lastRowToggle ? 'same-day-bg1' : 'same-day-bg2';
+        },
         scrollTo(dateStr) {
           if (!dateStr) return;
           const e = this.events.find(e => e.date === dateStr);
@@ -250,20 +228,11 @@
             if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         },
-        getDateRowClass(index) {
-          const curr = this.events[index];
-          const prev = this.events[index - 1];
-          if (!prev || curr.date !== prev.date) {
-            this._bgToggle = !this._bgToggle;
-          }
-          return this._bgToggle ? 'same-day-bg1' : 'same-day-bg2';
-        },
         async fetchPage(page = 1) {
           const [sy, sm, sd] = this.startDate.split('-');
           const [ey, em, ed] = this.endDate.split('-');
           const startStr = `${sm}-${sd}-${sy}`;
           const endStr = `${em}-${ed}-${ey}`;
-
           const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
             `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
           )}`;
@@ -304,8 +273,8 @@
           }
         },
         async fetchAllPages() {
-          this._bgToggle = true;
           this.events = [];
+          this.lastRowToggle = false;
           this.loading = true;
           let page = 1;
           while (await this.fetchPage(page)) page++;
