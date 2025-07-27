@@ -66,6 +66,54 @@ button {
   text-align: center;
   line-height: 20px;
 }
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #999;
+}
+.weekday {
+  padding: 4px 0;
+}
+
+.day-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  padding: 6px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  font-size: 12px;
+  position: relative;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+.day-card.today {
+  background-color: #DDDEAB;
+}
+.day-number {
+  font-weight: 500;
+  align-self: flex-end;
+  width: 100%;
+  text-align: right;
+}
+.event-tag {
+  margin: 2px 2px 0 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #007aff;
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  line-height: 20px;
+}
 
 .event-list table {
   width: 100%;
