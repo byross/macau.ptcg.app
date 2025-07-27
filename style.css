@@ -45,6 +45,11 @@ button {
   height: 80px;
   font-family: inherit;
 }
+
+.calendar-table th {
+height: auto;
+
+}
 .calendar-table td {
   text-align: right;
   padding-right: 6px;
@@ -74,6 +79,7 @@ button {
   border-radius: 16px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   overflow: hidden;
+  padding: 15px;
 }
 .event-list table:nth-child(odd) {
   background-color: #f9f9fa;
