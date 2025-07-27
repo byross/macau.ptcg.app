@@ -74,11 +74,7 @@ createApp({
 
         list.forEach(li => {
 
-          const url = li.querySelector('a')?.getAttribute('href');
-          const match = url?.match(/event-search\/(\d+)/);
-          const code = match ? match[1] : '';
-          console.log('event code:', url); // 👉 加這行看看是否有抓到
-
+          const code = li.querySelector('a.eventLink')?.href.match(/event-search\/(\\d+)/)?.[1] || '';
 
           const rawDate = li.querySelector('time.eventDate')?.textContent.trim();
           const [mm, dd] = rawDate.split('-');
