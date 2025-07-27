@@ -1,4 +1,5 @@
 const { createApp } = Vue;
+
 createApp({
   data() {
     const today = new Date();
@@ -60,8 +61,9 @@ createApp({
       const [ey, em, ed] = this.endDate.split('-');
       const startStr = `${sm}-${sd}-${sy}`;
       const endStr = `${em}-${ed}-${ey}`;
+
       const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-        `https://asia.pokemon-card.com/hk/event-search/search/?pageNo=${page}&startDate=${startStr}&endDate=${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23`
+        \`https://asia.pokemon-card.com/hk/event-search/search/?pageNo=\${page}&startDate=\${startStr}&endDate=\${endStr}&product[0]=20&product[1]=21&product[2]=22&product[3]=23\`
       )}`;
 
       try {
@@ -69,28 +71,28 @@ createApp({
         const html = await res.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
-        const list = doc.querySelectorAll('ul.eventList li.event');
+        const list = doc.querySelectorAll('ul.eventList a.eventLink');
         if (!list.length) return false;
 
-        list.forEach(li => {
-
-          const code = li.querySelector('a.eventLink')?.href.match(/event-search\/(\\d+)/)?.[1] || '';
+        list.forEach(a => {
+          const li = a.querySelector('li.event');
+          const code = a.getAttribute('href')?.match(/event-search\/(\d+)/)?.[1] || '';
 
           const rawDate = li.querySelector('time.eventDate')?.textContent.trim();
           const [mm, dd] = rawDate.split('-');
           const yyyy = new Date().getFullYear();
-          const dateObj = new Date(`${yyyy}-${mm}-${dd}T12:00:00`);
+          const dateObj = new Date(\`\${yyyy}-\${mm}-\${dd}T12:00:00\`);
           const date = dateObj.toISOString().split('T')[0];
 
           const time = li.querySelector('p.eventTime')?.textContent.trim();
           const title = li.querySelector('p.eventTitle')?.textContent.trim();
           const place = li.querySelector('p.place')?.textContent.trim();
           const organizer = li.querySelector('p.organizer')?.textContent.trim();
-          const lowerFields = `${place || ''} ${organizer || ''}`.toLowerCase();
 
+          const lowerFields = \`\${place || ''} \${organizer || ''}\`.toLowerCase();
           if (lowerFields.includes('澳門') || lowerFields.includes('噶地利亞街') || lowerFields.includes('祐漢新村')) {
             if (!this.organizerColors[organizer]) {
-              this.organizerColors[organizer] = `hsl(${Math.floor(Math.random() * 360)}, 70%, 35%)`;
+              this.organizerColors[organizer] = \`hsl(\${Math.floor(Math.random() * 360)}, 70%, 35%)\`;
             }
             this.events.push({ date, time, title, place, organizer, code });
           }
@@ -113,10 +115,9 @@ createApp({
       this.fetchAllPages();
     },
     rowBgClass(index, event) {
-      if (index === 0 || this.events[index].date !== this.events[index - 1].date) {
-        return 'first-of-day';
-      }
-      return '';
+      const prev = this.events[index - 1];
+      const even = index % 2 === 0;
+      return prev && prev.date !== event.date ? 'row-start' : even ? 'row-even' : 'row-odd';
     }
   },
   mounted() {
