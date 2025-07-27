@@ -42,7 +42,7 @@ button {
   border: 1px solid #ddd;
   padding: 4px;
   vertical-align: top;
-  height: 80px;
+  height: auto;
   font-family: inherit;
 }
 
