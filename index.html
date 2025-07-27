@@ -7,105 +7,104 @@
   <link rel="icon" type="image/png" href="images/favicon.png">
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        padding: 1rem;
-        background-color: #f8f8f8;
-        color: #1c1c1e;
-      }
-      h1 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        text-align: center;
-        margin-bottom: 1rem;
-      }
-      .filters {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-      }
-      .filters input[type="date"] {
-        font-size: 1rem;
-        padding: 0.3rem 0.6rem;
-        border: 1px solid #ccc;
-        border-radius: 0.5rem;
-        background-color: #fff;
-      }
-      .filters button {
-        padding: 0.4rem 1rem;
-        font-size: 1rem;
-        background-color: #007aff;
-        color: white;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-      }
-      .calendar-table, table {
-        width: 100%;
-        border-spacing: 0;
-        background-color: white;
-        border-radius: 1rem;
-        overflow: hidden;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      }
-      .calendar-table th,
-      .calendar-table td {
-        width: 14.28%;
-        border: 1px solid #e5e5ea;
-        vertical-align: top;
-        height: 90px;
-        padding: 6px;
-        text-align: left;
-        font-size: 0.9rem;
-        box-sizing: border-box;
-      }
-      .calendar-table th {
-        background-color: #f2f2f7;
-        text-align: center;
-        font-weight: 500;
-      }
-      .calendar-day {
-        cursor: pointer;
-      }
-      .today-marker {
-        display: inline-block;
-        background-color: #1c1c1e;
-        color: white;
-        font-weight: 600;
-        padding: 4px 8px;
-        border-radius: 1rem;
-        font-size: 0.85rem;
-      }
-      .tag {
-        display: inline-block;
-        padding: 2px 6px;
-        border-radius: 0.5rem;
-        font-size: 0.7rem;
-        color: #fff;
-        margin: 2px 2px 0 0;
-        white-space: nowrap;
-      }
-      table th {
-        background-color: #f2f2f7;
-        font-weight: 500;
-      }
-      table td, table th {
-        padding: 10px;
-        font-size: 0.9rem;
-      }
-      .map-link {
-        text-decoration: none;
-        font-size: 1.2rem;
-      }
-      p {
-        text-align: center;
-        color: #999;
-      }
-    </style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 1rem;
+      background-color: #f8f8f8;
+      color: #1c1c1e;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .filters {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .filters input[type="date"] {
+      font-size: 1rem;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      background-color: #fff;
+    }
+    .filters button {
+      padding: 0.4rem 1rem;
+      font-size: 1rem;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+    .calendar-table, table {
+      width: 100%;
+      border-spacing: 0;
+      background-color: white;
+      border-radius: 1rem;
+      overflow: hidden;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .calendar-table th,
+    .calendar-table td {
+      width: 14.28%;
+      border: 1px solid #e5e5ea;
+      vertical-align: top;
+      height: 90px;
+      padding: 6px;
+      text-align: left;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+    }
+    .calendar-table th {
+      background-color: #f2f2f7;
+      text-align: center;
+      font-weight: 500;
+    }
+    .calendar-day {
+      cursor: pointer;
+    }
+    .calendar-day.today {
+      background-color: #1c1c1e;
+      color: white;
+      border-radius: 0.5rem;
+    }
+    .today-marker {
+      font-weight: 600;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 0.5rem;
+      font-size: 0.7rem;
+      color: #fff;
+      margin: 2px 2px 0 0;
+      white-space: nowrap;
+    }
+    table th {
+      background-color: #f2f2f7;
+      font-weight: 500;
+    }
+    table td, table th {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+    .map-link {
+      text-decoration: none;
+      font-size: 1.2rem;
+    }
+    p {
+      text-align: center;
+      color: #999;
+    }
+  </style>
 </head>
 <body>
   <div id="app">
@@ -126,11 +125,17 @@
       </thead>
       <tbody>
         <tr v-for="(week, wi) in calendarWeeks" :key="wi">
-          <td v-for="(day, di) in week" :key="di" class="calendar-day" @click="scrollTo(day && day.dateStr)">
+          <td v-for="(day, di) in week"
+              :key="di"
+              class="calendar-day"
+              :class="{ today: day && day.isToday }"
+              @click="scrollTo(day && day.dateStr)">
             <div v-if="day">
-              <span :class="{ 'today-marker': day.isToday }">{{ day.day }}</span>
+              <span class="today-marker">{{ day.day }}</span>
               <div v-if="day.events.length">
-                <span v-for="(e, ei) in day.events" :key="ei" class="tag"
+                <span v-for="(e, ei) in day.events"
+                      :key="ei"
+                      class="tag"
                       :style="{ backgroundColor: organizerColors[e.organizer] || '#333' }">
                   {{ e.organizer.charAt(0) }}
                 </span>
@@ -155,13 +160,18 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="event in events" :key="event.title + event.datetime" :id="event.scrollId">
+        <tr v-for="event in events"
+            :key="event.title + event.datetime"
+            :id="event.scrollId">
           <td>{{ event.date }}</td>
           <td>{{ event.time }}</td>
           <td>{{ event.organizer }}</td>
           <td>{{ event.title }}</td>
           <td>
-            <a class="map-link" :href="`https://www.google.com/maps/search/?q=澳門 ${event.place}`" target="_blank" rel="noopener noreferrer">🗺️</a>
+            <a class="map-link"
+               :href="`https://www.google.com/maps/search/?q=澳門 ${event.place}`"
+               target="_blank"
+               rel="noopener noreferrer">🗺️</a>
           </td>
         </tr>
       </tbody>
@@ -249,7 +259,7 @@
               const rawDate = li.querySelector('time.eventDate')?.textContent.trim();
               const [mm, dd] = rawDate.split('-');
               const yyyy = new Date().getFullYear();
-              const dateObj = new Date(`${yyyy}-${mm}-${dd}T12:00:00`); // 加入中午以避免時區轉換提早一天
+              const dateObj = new Date(`${yyyy}-${mm}-${dd}T12:00:00`);
               const date = dateObj.toISOString().split('T')[0];
 
               const time = li.querySelector('p.eventTime')?.textContent.trim();
