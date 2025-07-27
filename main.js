@@ -23,10 +23,11 @@ createApp({
         e.scrollId = id;
         if (!byDate[e.date]) byDate[e.date] = [];
         byDate[e.date].push(e);
-      },
-  flatDays() {
-    return this.calendarWeeks.flat();
-  });
+      });
+
+      flatDays() {
+        return this.calendarWeeks.flat();
+      };
 
       const weeks = [];
       const firstDate = new Date(this.startDate);
