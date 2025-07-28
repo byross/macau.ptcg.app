@@ -25,6 +25,8 @@ createApp({
         byDate[e.date].push(e);
       });
 
+
+
       const weeks = [];
       const firstDate = new Date(this.startDate);
       firstDate.setDate(firstDate.getDate() - ((firstDate.getDay() + 6) % 7));
@@ -48,6 +50,11 @@ createApp({
     },
     flatDays() {
       return this.calendarWeeks.flat();
+    },formattedStart() {
+      return this.startDate.replace(/-/g, '/');
+    },
+    formattedEnd() {
+      return this.endDate.replace(/-/g, '/');
     }
   },
   methods: {
@@ -135,6 +142,13 @@ createApp({
       const prev = this.events[index - 1];
       const even = index % 2 === 0;
       return prev && prev.date !== event.date ? 'row-start' : even ? 'row-even' : 'row-odd';
+    }
+  },
+  showDatePicker(which) {
+    if (which === 'start') {
+      this.$refs.startPicker.click();
+    } else if (which === 'end') {
+      this.$refs.endPicker.click();
     }
   },
   mounted() {

@@ -10,6 +10,51 @@ h1 {
   text-align: center;
   margin-bottom: 10px;
 }
+
+.date-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.date-input {
+  width: 120px;
+  height: 40px;
+  padding: 0 10px;
+  border: none;
+  border-bottom: 2px solid #B0BEC5;
+  font-size: 16px;
+  color: #424242;
+  background-color: transparent;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.date-input:focus {
+  border-bottom-color: #42A5F5;
+}
+
+.separator {
+  font-size: 18px;
+  color: #424242;
+}
+
+.search-btn {
+  height: 40px;
+  padding: 0 16px;
+  background-color: #42A5F5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+
+
+
 .filters {
   display: flex;
   justify-content: center;

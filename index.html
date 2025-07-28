@@ -28,11 +28,15 @@
 <body>
   <div id="app">
     <h1>澳門地區官方GYM寶可夢卡牌活動</h1>
-    <div class="filters">
-      <label><input type="date" v-model="startDate"></label>
-      到
-      <label><input type="date" v-model="endDate"></label>
-      <button @click="search">查詢</button>
+    <div class="date-container">
+      <input type="text" class="date-input" :value="formattedStart" readonly @click="showDatePicker('start')">
+      <span class="separator">至</span>
+      <input type="text" class="date-input" :value="formattedEnd" readonly @click="showDatePicker('end')">
+      <button @click="search" class="search-btn">查詢</button>
+
+      <!-- 隱藏的 date input -->
+      <input type="date" ref="startPicker" v-model="startDate" style="display:none" @change="search">
+      <input type="date" ref="endPicker" v-model="endDate" style="display:none" @change="search">
     </div>
 
     <div class="calendar-weekdays">
