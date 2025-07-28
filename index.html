@@ -48,7 +48,8 @@
         <div v-if="day && day.events.length"
              v-for="(e, ei) in day.events.slice(0, 10)"
              :key="ei"
-             class="event-tag">
+             class="event-tag"
+             :style="{ backgroundColor: organizerColors[e.organizer] || '#007aff' }">
           {{ e.organizer.charAt(0) }}
         </div>
       </div>
@@ -64,7 +65,10 @@
          :href="`https://asia.pokemon-card.com/hk/event-search/${event.code}/`"
          target="_blank"
          style="text-decoration: none; color: inherit; display: block;">
-        <table :class="rowBgClass(index, event)">
+         <table
+           :class="rowBgClass(index, event)"
+           :style="{ borderLeft: '6px solid ' + getDateStripeColor(event.date) }"
+         >
           <tbody>
             <tr>
               <td colspan="2">
