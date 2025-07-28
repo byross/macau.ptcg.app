@@ -29,13 +29,16 @@
   <div id="app">
     <h1>澳門地區官方GYM寶可夢卡牌活動</h1>
     <div class="date-container">
-
       <input type="date" v-model="startDate" class="date-input" @change="search">
       <span class="separator">至</span>
       <input type="date" v-model="endDate" class="date-input" @change="search">
       <button @click="search" class="search-btn">⟳</button>
-
     </div>
+
+      <div class="date-container">
+        <p v-if="loading"><img style="width: 60px;" src="images/loading.gif" with="60px" alt="載入中..."></p>
+        <p v-if="!loading && events.length === 0">網絡繁忙，請重新載入</p>
+      </div>    
 
     <div class="calendar-weekdays">
       <div v-for="day in weekDays" :key="day" class="weekday">{{ day }}</div>
@@ -57,8 +60,7 @@
       </div>
     </div>
 
-    <p v-if="loading">載入中...</p>
-    <p v-if="!loading && events.length === 0">網絡繁忙，請重新載入</p>
+
 
     <div class="event-list">
       <a v-for="(event, index) in events"
