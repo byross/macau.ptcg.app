@@ -138,12 +138,14 @@ createApp({
 
           if (lowerFields.includes('澳門') || lowerFields.includes('噶地利亞街') || lowerFields.includes('祐漢新村')) {
             if (!this.organizerColors[organizer]) {
+              const allOrganizers = Object.keys(this.organizerColors).sort();
+              const index = allOrganizers.indexOf(organizer);
               const fixedColors = [
                 "#FF6F61", "#4A90E2", "#FFD166", "#2ECC71", "#9B59B6",
                 "#E74C3C", "#1ABC9C", "#F1C40F", "#34495E", "#EC407A"
               ];
-              const hash = organizer.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-              this.organizerColors[organizer] = fixedColors[hash % fixedColors.length];
+              const nextIndex = Object.keys(this.organizerColors).length % fixedColors.length;
+              this.organizerColors[organizer] = fixedColors[nextIndex];
             }
             this.events.push({ date, time, title, place, organizer, code });
           }
