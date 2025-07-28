@@ -13,6 +13,25 @@ h1 {
   margin-bottom: 10px;
 }
 
+/* HTML: <div class="ribbon">Your text content</div> */
+.ribbon {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #fff;
+}
+.ribbon {
+  --r: .8em; /* control the cutout */
+  
+  padding-inline: 1lh calc(var(--r) + .25em);
+  line-height: 1.8;
+  clip-path: polygon(1lh 100%,calc(100% - var(--r)) 100%,100% 50%,calc(100% - var(--r)) 0,1lh 0,1lh -999px,0 -999px,0 0);
+  border-image: conic-gradient(#D95B43 0 0) fill 0//999px;
+  outline: 999px solid #0004;
+  width: fit-content;
+  margin: 0 auto 15px auto;
+}
+
+
 .date-container {
   display: flex;
   justify-content: center; /* ⭐ 水平置中 */
