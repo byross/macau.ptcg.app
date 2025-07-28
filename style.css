@@ -19,6 +19,7 @@ h1 {
   align-items: center;
   gap: 10px;
   margin-bottom: 16px; /* optional: 保持與下方日曆距離 */
+  margin-left: 35px;
 }
 
 .date-input {
@@ -27,8 +28,8 @@ h1 {
   padding: 0 10px;
   border: none;
   border-bottom: 2px solid #B0BEC5;
-  font-size: 16px;
-  color: #424242;
+  font-size: 1.4em;
+  color: #999999;
   background-color: transparent;
   outline: none;
   box-shadow: none;
@@ -47,14 +48,14 @@ h1 {
 }
 
 .search-btn {
-  height: auto;
-  padding: 5px;
-  background-color: #42A5F5;
-  color: white;
-  border: none;
-  /* border-radius: 6px; */
-  cursor: pointer;
-  font-size: 22px;
+    height: auto;
+    padding: 5px;
+    background-color: rgb(183 183 183);
+    color: white;
+    border: none;
+    /* border-radius: 6px; */
+    cursor: pointer;
+    font-size: 22px;
 }
 
 .hidden-date {
@@ -111,6 +112,7 @@ button {
   padding: 10px;
   background-color: #f2f2f7;
   border-radius: 16px;
+  margin-bottom: 20px;
 }
 
 .calendar-weekdays {
