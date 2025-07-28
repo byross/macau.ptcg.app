@@ -63,6 +63,18 @@ createApp({
       const hash = Array.from(date).reduce((sum, char) => sum + char.charCodeAt(0), 0);
       return hash % 2 === 0 ? '#007aff' : '#34c759'; // 藍 or 綠
     },
+    getColorForDate(date) {
+      const fixedColors = [
+        "#FF6F61", "#4A90E2", "#FFD166", "#2ECC71", "#9B59B6",
+        "#E74C3C", "#1ABC9C", "#F1C40F", "#34495E", "#EC407A"
+      ];
+      let hash = 0;
+      for (let i = 0; i < date.length; i++) {
+        hash = date.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const index = Math.abs(hash) % fixedColors.length;
+      return fixedColors[index];
+    },
     scrollTo(dateStr) {
       if (!dateStr) return;
       const e = this.events.find(e => e.date === dateStr);
