@@ -32,7 +32,7 @@
       <input type="text" class="date-input" :value="formattedStart" readonly @click="showDatePicker('start')">
       <span class="separator">至</span>
       <input type="text" class="date-input" :value="formattedEnd" readonly @click="showDatePicker('end')">
-      <button @click="search" class="search-btn">查詢</button>
+      <button @click="search" class="search-btn">▸</button>
 
       <!-- 隱藏的 date input -->
       <input type="date" ref="startPicker" v-model="startDate" class="hidden-date" @change="search">
