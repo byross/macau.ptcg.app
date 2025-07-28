@@ -145,11 +145,8 @@ createApp({
     },
     showDatePicker(which) {
       this.$nextTick(() => {
-        if (which === 'start') {
-          this.$refs.startPicker?.click();
-        } else if (which === 'end') {
-          this.$refs.endPicker?.click();
-        }
+        const el = which === 'start' ? this.$refs.startPicker : this.$refs.endPicker;
+        el?.click();
       });
     }
   },

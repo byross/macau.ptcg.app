@@ -35,8 +35,9 @@
       <button @click="search" class="search-btn">查詢</button>
 
       <!-- 隱藏的 date input -->
-      <input type="date" ref="startPicker" v-model="startDate" style="display:none" @change="search">
-      <input type="date" ref="endPicker" v-model="endDate" style="display:none" @change="search">
+      <input type="date" ref="startPicker" v-model="startDate" class="hidden-date" @change="search">
+      <input type="date" ref="endPicker" v-model="endDate" class="hidden-date" @change="search">
+
     </div>
 
     <div class="calendar-weekdays">
