@@ -25,8 +25,6 @@ createApp({
         byDate[e.date].push(e);
       });
 
-
-
       const weeks = [];
       const firstDate = new Date(this.startDate);
       firstDate.setDate(firstDate.getDate() - ((firstDate.getDay() + 6) % 7));
@@ -50,7 +48,8 @@ createApp({
     },
     flatDays() {
       return this.calendarWeeks.flat();
-    },formattedStart() {
+    },
+    formattedStart() {
       return this.startDate.replace(/-/g, '/');
     },
     formattedEnd() {
@@ -58,10 +57,29 @@ createApp({
     }
   },
   methods: {
-    getDateStripeColor(date) {
-      // 將每個日期映射成固定顏色（藍或綠交錯）
-      const hash = Array.from(date).reduce((sum, char) => sum + char.charCodeAt(0), 0);
-      return hash % 2 === 0 ? '#007aff' : '#34c759'; // 藍 or 綠
+    updateServiceWorkerIfNewAvailable() {
+      if (!('serviceWorker' in navigator)) return;
+
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (!reg) return;
+
+        reg.update();
+
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                window.location.reload();
+              }
+            });
+          }
+        });
+      });
     },
     getColorForDate(date) {
       const fixedColors = [
@@ -120,18 +138,15 @@ createApp({
 
           if (lowerFields.includes('澳門') || lowerFields.includes('噶地利亞街') || lowerFields.includes('祐漢新村')) {
             if (!this.organizerColors[organizer]) {
-              const allOrganizers = Object.keys(this.organizerColors).sort();
-              const index = allOrganizers.indexOf(organizer);
               const fixedColors = [
                 "#FF6F61", "#4A90E2", "#FFD166", "#2ECC71", "#9B59B6",
                 "#E74C3C", "#1ABC9C", "#F1C40F", "#34495E", "#EC407A"
               ];
-              const nextIndex = Object.keys(this.organizerColors).length % fixedColors.length;
-              this.organizerColors[organizer] = fixedColors[nextIndex];
+              const hash = organizer.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+              this.organizerColors[organizer] = fixedColors[hash % fixedColors.length];
             }
             this.events.push({ date, time, title, place, organizer, code });
           }
-
         });
 
         return true;
@@ -148,21 +163,22 @@ createApp({
       this.loading = false;
     },
     search() {
+      this.updateServiceWorkerIfNewAvailable();
       this.fetchAllPages();
     },
     rowBgClass(index, event) {
       const prev = this.events[index - 1];
       const even = index % 2 === 0;
       return prev && prev.date !== event.date ? 'row-start' : even ? 'row-even' : 'row-odd';
-    },
-    showDatePicker(which) {
-      this.$nextTick(() => {
-        const el = which === 'start' ? this.$refs.startPicker : this.$refs.endPicker;
-        el?.click();
-      });
     }
   },
   mounted() {
     this.fetchAllPages();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
   }
 }).mount('#app');
