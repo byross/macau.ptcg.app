@@ -142,13 +142,13 @@ createApp({
       const prev = this.events[index - 1];
       const even = index % 2 === 0;
       return prev && prev.date !== event.date ? 'row-start' : even ? 'row-even' : 'row-odd';
-    }
-  },
-  showDatePicker(which) {
-    if (which === 'start') {
-      this.$refs.startPicker.click();
-    } else if (which === 'end') {
-      this.$refs.endPicker.click();
+    },
+    showDatePicker(which) {
+      if (which === 'start') {
+        this.$refs.startPicker.click();
+      } else if (which === 'end') {
+        this.$refs.endPicker.click();
+      }
     }
   },
   mounted() {

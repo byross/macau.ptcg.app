@@ -13,9 +13,10 @@ h1 {
 
 .date-container {
   display: flex;
+  justify-content: center; /* ⭐ 水平置中 */
   align-items: center;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 16px; /* optional: 保持與下方日曆距離 */
 }
 
 .date-input {
