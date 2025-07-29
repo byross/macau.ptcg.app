@@ -79,10 +79,21 @@
          >
           <tbody>
             <tr>
-              <td colspan="2">
-                <i class="far fa-calendar" style="color: #1e4d71;"></i>&nbsp;
-                <span style="font-size: 18px">{{ event.date }}</span> -
-                <span style="font-size: 11px">{{ event.time }}</span>
+              <td colspan="2" style="display: flex; align-items: center; flex-wrap: wrap;">
+                <i class="far fa-calendar" style="margin-right:4px;"></i>
+                <span style="font-size: 18px; margin-right:8px;">{{ event.date }}</span> 
+                                <!-- 加上下面這行 -->
+                <span
+                  class="weekday-circle"
+                  :style="{
+                    borderColor: getColorForDate(event.date),
+                    color: getColorForDate(event.date)
+                  }"
+                >
+                  {{ weekdayChar(event.date) }}
+                </span>
+                <span style="font-size: 11px; margin-left:8px;">{{ event.time }}</span>
+
               </td>
             </tr>
             <tr>

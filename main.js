@@ -168,6 +168,11 @@ createApp({
       this.updateServiceWorkerIfNewAvailable();
       this.fetchAllPages();
     },
+    weekdayChar(dateStr) {
+      const days = ['日','一','二','三','四','五','六'];
+      const d = new Date(dateStr);
+      return days[d.getDay()];
+    },
     rowBgClass(index, event) {
       const prev = this.events[index - 1];
       const even = index % 2 === 0;
