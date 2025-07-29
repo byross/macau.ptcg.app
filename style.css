@@ -182,3 +182,12 @@ button {
   white-space: nowrap;
   text-align: center;
 }
+.company-logo {
+  position: fixed;   /* 固定在視窗 */
+  right: 0;          /* 緊貼右邊 */
+  bottom: 0;         /* 緊貼下方 */
+  margin: 0;         /* 取消任何預設外距 */
+  width: 10em;       /* 視需要調整 Logo 大小 */
+  height: auto;      /* 保持比例 */
+  z-index: 1000;     /* 確保不被其它元素蓋住 */
+}
