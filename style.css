@@ -191,3 +191,52 @@ button {
   height: auto;      /* 保持比例 */
   z-index: 1000;     /* 確保不被其它元素蓋住 */
 }
+
+/* 桌機/大螢幕時，活動列表改用多欄 Grid 排版 */
+@media (min-width: 800px) {
+  .event-list {
+    display: grid;
+    /* 自動填滿，每欄最小寬度 320px，最大平均分配 */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    /* 欄與欄間隔 */
+    padding: 0 20px;
+    /* 左右內距，看你需要 */
+  }
+
+  .event-list a {
+    /* 讓 <a> 跟 Grid 單元格同寬 */
+    display: block;
+  }
+
+  .event-list table {
+    /* 移除原本的 margin-bottom，改用 Grid gap */
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+
+  /* 1. 讓 day-card 水平排列，且靠左開始 */
+  .calendar-grid .day-card {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    /* 從左邊開始排 */
+  }
+
+  /* 2. event-tag 固定順序，左邊間隔 */
+  .calendar-grid .day-card .event-tag {
+    order: 1;
+    margin-right: 4px;
+  }
+
+  /* 3. day-number 排在最後並靠右 */
+  .calendar-grid .day-card .day-number {
+    order: 2;
+    margin-left: auto;
+    /* 把自己推到最右 */
+  }
+}
