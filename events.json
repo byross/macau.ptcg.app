@@ -1,0 +1,44 @@
+[
+  {
+    "date": "2025-12-20",
+    "time": "09:00-21:00",
+    "title": "2025-26 香港紀念球聯盟賽 Day 1",
+    "place": "香港會議展覽中心 Hall 1AB",
+    "organizer": "Pokémon Asia Championship Series",
+    "code": "11696",
+    "type": "league",
+    "description": "大師組比賽，報到時間 09:00-10:30，第1輪開始 11:15",
+    "registration_deadline": "2025-11-17 23:59",
+    "external_link": "https://pacs.portal-pokemon.com/2025-26/hk/pbl/",
+    "venue": "香港島灣仔博覽道1號",
+    "capacity": "大師組：1,788名"
+  },
+  {
+    "date": "2025-12-21",
+    "time": "08:00-21:00",
+    "title": "2025-26 香港紀念球聯盟賽 Day 2",
+    "place": "香港會議展覽中心 Hall 1AB",
+    "organizer": "Pokémon Asia Championship Series",
+    "code": "11697",
+    "type": "league",
+    "description": "孩童組、少年組、大師組比賽，孩童組報到 08:00-09:00，少年組報到 08:00-09:00，大師組報到 10:00-11:00",
+    "registration_deadline": "2025-11-17 23:59",
+    "external_link": "https://pacs.portal-pokemon.com/2025-26/hk/pbl/",
+    "venue": "香港島灣仔博覽道1號",
+    "capacity": "孩童組：300名，少年組：600名，大師組：1,788名"
+  },
+  {
+    "date": "2025-09-28",
+    "time": "09:00-18:00",
+    "title": "2025-26 香港高級球聯盟賽 賽季1-1",
+    "place": "灣仔合和酒店 16樓",
+    "organizer": "高級球聯盟賽",
+    "code": "11780",
+    "type": "league",
+    "description": "高級球聯盟賽 賽季1-1",
+    "registration_deadline": "2025-09-07 23:59",
+    "external_link": "https://asia.pokemon-card.com/hk/event-search/11780/",
+    "venue": "灣仔合和酒店",
+    "capacity": "待定"
+  }
+]

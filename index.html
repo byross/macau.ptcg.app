@@ -70,7 +70,7 @@
       <a v-for="(event, index) in events"
          :key="event.title + event.datetime"
          :id="event.scrollId"
-         :href="`https://asia.pokemon-card.com/hk/event-search/${event.code}/`"
+         :href="event.external_link || `https://asia.pokemon-card.com/hk/event-search/${event.code}/`"
          target="_blank"
          style="text-decoration: none; color: inherit; display: block;">
          <table
@@ -97,8 +97,16 @@
               </td>
             </tr>
             <tr>
-              <td width="70%" style="font-size: 21px"><strong>{{ event.organizer }}</strong></td>
+              <td width="70%" style="font-size: 21px">
+                <strong>{{ event.organizer }}</strong>
+                <span v-if="event.type === 'league'" style="font-size: 12px; color: #007aff; margin-left: 8px;">🏆</span>
+              </td>
               <td width="30%" style="font-size: 10px">{{ event.title }}</td>
+            </tr>
+            <tr v-if="event.registration_deadline">
+              <td colspan="2" style="font-size: 11px; color: #ff6b6b; text-align: center;">
+                ⏰ 報名截止：{{ event.registration_deadline }}
+              </td>
             </tr>
             <tr><td colspan="2" style="padding: 8px 0;text-align: center"><i class="fa fa-arrow-down" aria-hidden="true"></i></td></tr>
           </tbody>

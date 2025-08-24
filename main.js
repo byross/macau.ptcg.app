@@ -6,6 +6,7 @@ createApp({
     const in30days = new Date(Date.now() + 30 * 86400000);
     return {
       events: [],
+      jsonEvents: [],
       loading: false,
       startDate: today.toISOString().split('T')[0],
       endDate: in30days.toISOString().split('T')[0],
@@ -160,10 +161,47 @@ createApp({
     async fetchAllPages() {
       this.events = [];
       this.loading = true;
+      
+      // 讀取 JSON 文件中的活動
+      await this.loadJsonEvents();
+      
+      // 讀取官方網站的活動
       let page = 1;
       while (await this.fetchPage(page)) page++;
+      
+      // 合併所有活動並排序
+      this.mergeAndSortEvents();
+      
       this.loading = false;
     },
+    async loadJsonEvents() {
+      try {
+        const response = await fetch('events.json');
+        if (response.ok) {
+          this.jsonEvents = await response.json();
+          console.log('JSON 活動載入成功:', this.jsonEvents.length, '個活動');
+        }
+      } catch (error) {
+        console.error('載入 JSON 活動失敗:', error);
+        this.jsonEvents = [];
+      }
+    },
+    
+    mergeAndSortEvents() {
+      // 合併官方活動和 JSON 活動
+      const allEvents = [...this.events, ...this.jsonEvents];
+      
+      // 按日期和時間排序
+      allEvents.sort((a, b) => {
+        if (a.date !== b.date) {
+          return a.date.localeCompare(b.date);
+        }
+        return (a.time || '').localeCompare(b.time || '');
+      });
+      
+      this.events = allEvents;
+    },
+    
     search() {
       this.updateServiceWorkerIfNewAvailable();
       this.fetchAllPages();
