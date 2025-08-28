@@ -68,7 +68,7 @@
 
     <div class="event-list">
       <a v-for="(event, index) in events"
-         :key="event.title + event.datetime"
+         :key="`${event.title}-${event.date}-${event.time || ''}-${event.organizer}`"
          :id="event.scrollId"
          :href="event.external_link || `https://asia.pokemon-card.com/hk/event-search/${event.code}/`"
          target="_blank"
